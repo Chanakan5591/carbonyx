@@ -1,12 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@layer reset,
+base,
+tokens,
+recipes,
+utilities;
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+html {
+    background-color: #fffaf5;
+    font-family: "IBM Plex Sans", sans-serif;
 }
