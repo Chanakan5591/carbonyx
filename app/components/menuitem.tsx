@@ -40,6 +40,7 @@ export default function MenuItem({ icon, text, route }: Props) {
         cursor: "pointer",
         transition: "all 0.4s ease-in-out",
         borderBottom: "1px solid",
+        borderBottomColor: "neutral.400",
         bgGradient: currentRoute === route ? "to-r" : "none",
         gradientFrom: "white",
         gradientTo: "accent.50",
@@ -73,6 +74,7 @@ export default function MenuItem({ icon, text, route }: Props) {
         cursor: "default",
         transition: "all 0.4s ease-in-out",
         borderBottom: "1px solid",
+        borderBottomColor: "neutral.400",
         bgGradient: "none",
       })}
     >

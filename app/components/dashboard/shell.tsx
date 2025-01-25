@@ -50,7 +50,7 @@ export default function Shell() {
           })}
         >
           <div>
-            <MenuItem text="My Profile" icon="home" route="/dashboard" />
+            <MenuItem text="Dashboard" icon="home" route="/dashboard" />
             <MenuItem
               text="Information"
               icon="information"
@@ -59,13 +59,14 @@ export default function Shell() {
             <MenuItem text="Location" route="/dashboard/location" />
             <MenuItem text="Vehicles" route="/dashboard/vehicles" />
             <MenuItem text="Scopes of Emissions" route="/dashboard/scopes" />
-            <MenuItem
-              text="Historical Statistics"
-              route="/dashboard/historical"
-            />
           </div>
           <div>
-            <hr />
+            <hr
+              className={css({
+                borderTop: "1px solid",
+                borderTopColor: "neutral.400",
+              })}
+            />
             <MenuItem text="0% of footprint" icon="circle" />
             <MenuItem text="Help center" icon="question" />
             <MenuItem text="Settings" icon="gear" />

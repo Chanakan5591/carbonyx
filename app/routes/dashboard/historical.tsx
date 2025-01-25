@@ -3,6 +3,7 @@ import { Bar } from "react-chartjs-2";
 import { chartData } from "~/utils/mock-data";
 import { css } from "carbonyxation/css";
 import { flex, vstack, hstack } from "carbonyxation/patterns";
+import Indicator from "~/components/indicator";
 
 export default function Historical() {
   const options = {
@@ -20,6 +21,14 @@ export default function Historical() {
       },
       y: {
         stacked: true,
+        ticks: {
+          // Optional: Add a callback to format y-axis labels
+          callback: function (value) {
+            return value < 0
+              ? "(" + Math.abs(value).toLocaleString() + ")"
+              : value.toLocaleString();
+          },
+        },
       },
     },
   };
@@ -34,49 +43,28 @@ export default function Historical() {
         h: "full",
       })}
     >
-      <div
-        className={vstack({
-          bg: "white",
-          border: "1px solid",
-          w: 36,
-          h: 36,
-          rounded: "2xl",
-          p: 2,
-          justifyContent: "center",
-          alignItems: "left",
+      <span
+        className={css({
+          fontSize: "xl",
+          fontWeight: "bold",
         })}
       >
-        <span
-          className={css({
-            fontSize: 12,
-            fontWeight: "thin",
-          })}
-        >
-          Total Emissions
-        </span>
-        <span
-          className={hstack({
-            alignItems: "end",
-          })}
-        >
-          <span
-            className={css({
-              fontWeight: "bold",
-              fontSize: 60,
-              lineHeight: 1,
-            })}
-          >
-            {72}
-          </span>
-
-          <span
-            className={css({
-              fontSize: 12,
-            })}
-          >
-            tCO₂e
-          </span>
-        </span>
+        Carbon Emission / Offset Dashboard
+      </span>
+      <div className={hstack()}>
+        <Indicator
+          label="Total Emissions"
+          value={624}
+          previous={527}
+          unit="tCO₂e"
+        />
+        <Indicator
+          label="Total Offset"
+          value={41}
+          previous={34}
+          unit="tCO₂e"
+          valueTrend="positive"
+        />
       </div>
       <div
         className={flex({
