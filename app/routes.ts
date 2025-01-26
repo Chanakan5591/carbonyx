@@ -14,6 +14,8 @@ export default [
       route("/info", "routes/dashboard/information.tsx"),
       route("/electricity", "routes/dashboard/electricity.tsx"),
       route("/stationary_fuels", "routes/dashboard/stationary_fuel.tsx"),
+      route("/transportation", "routes/dashboard/transportation.tsx"),
+      route("/waste", "routes/dashboard/waste.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;

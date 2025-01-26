@@ -1,16 +1,17 @@
 import { css } from "carbonyxation/css";
-import { flex, hstack, vstack } from "carbonyxation/patterns";
+import { flex, hstack } from "carbonyxation/patterns";
 import { Outlet } from "react-router";
 import SmallLogo from "~/assets/logo_64x.png";
 import MenuItem from "../menuitem";
 
 export default function Shell() {
+  // Calculate the header height (assuming padding: "4" is 16px on each side, total 32px + assumed content height of 24px)
+  const headerHeight = "65px"; // **Adjust this value to your actual header height**
+
   return (
     <div
       className={css({
-        height: "svh",
-        display: "flex",
-        flexDirection: "column",
+        height: "100vh", // Use vh directly for clarity
       })}
     >
       <div
@@ -36,7 +37,8 @@ export default function Shell() {
       <div
         className={flex({
           w: "full",
-          height: "full",
+          // Calculate the remaining height after subtracting the header
+          height: `calc(100vh - ${headerHeight})`,
         })}
       >
         <div
@@ -61,8 +63,8 @@ export default function Shell() {
               text="Stationary Fuels"
               route="/dashboard/stationary_fuels"
             />
-            <MenuItem text="Vehicles" route="/dashboard/vehicles" />
-            <MenuItem text="Scopes of Emissions" route="/dashboard/scopes" />
+            <MenuItem text="Transportation" route="/dashboard/transportation" />
+            <MenuItem text="Waste" route="/dashboard/waste" />
           </div>
           <div>
             <hr
@@ -79,7 +81,7 @@ export default function Shell() {
         <div
           className={css({
             flex: 1,
-            overflow: "auto",
+            overflowY: "auto", // Use overflowY for better control
           })}
         >
           <Outlet />

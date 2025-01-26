@@ -12,19 +12,18 @@ import {
 import type { Route } from "./+types/electricity";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const mockOrgId = "1";
-  const stationaryFuelsUsage = await db
+  const wasteReleased = await db
     .select()
     .from(collectedData)
     .innerJoin(factors, eq(collectedData.factorId, factors.id))
-    .where(eq(factors.type, "stationary_combustion"));
+    .where(eq(factors.type, "waste"));
 
-  type SFUsageWithEmission = (typeof stationaryFuelsUsage)[number] & {
+  type SFUsageWithEmission = (typeof wasteReleased)[number] & {
     totalEmission: number;
   };
 
-  const sf_usage_with_emission: SFUsageWithEmission[] =
-    stationaryFuelsUsage.map((data) => ({
+  const sf_usage_with_emission: SFUsageWithEmission[] = wasteReleased.map(
+    (data) => ({
       ...data,
       totalEmission:
         Math.round(
@@ -32,7 +31,8 @@ export async function loader({ params }: Route.LoaderArgs) {
             Number.EPSILON) *
             100,
         ) / 100,
-    }));
+    }),
+  );
 
   return sf_usage_with_emission.map((item) => {
     return {

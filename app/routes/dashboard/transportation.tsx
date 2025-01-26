@@ -13,18 +13,18 @@ import type { Route } from "./+types/electricity";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const mockOrgId = "1";
-  const stationaryFuelsUsage = await db
+  const transportationsUsage = await db
     .select()
     .from(collectedData)
     .innerJoin(factors, eq(collectedData.factorId, factors.id))
-    .where(eq(factors.type, "stationary_combustion"));
+    .where(eq(factors.type, "transportation"));
 
-  type SFUsageWithEmission = (typeof stationaryFuelsUsage)[number] & {
+  type SFUsageWithEmission = (typeof transportationsUsage)[number] & {
     totalEmission: number;
   };
 
   const sf_usage_with_emission: SFUsageWithEmission[] =
-    stationaryFuelsUsage.map((data) => ({
+    transportationsUsage.map((data) => ({
       ...data,
       totalEmission:
         Math.round(
@@ -43,7 +43,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   });
 }
 
-export default function StationaryCombustionInputPage({
+export default function TransportationInputPage({
   loaderData,
 }: Route.ComponentProps) {
   const data = loaderData;
@@ -52,12 +52,12 @@ export default function StationaryCombustionInputPage({
     { key: "id", title: "ID", type: "number" },
     { key: "timestamp", title: "Timestamp", type: "timestamp" },
     { key: "type", title: "Type", type: "string" },
-    { key: "value", title: "Value", type: "string", suffix: "Kg" },
+    { key: "value", title: "Value", type: "string", suffix: "tkm" },
     {
       key: "recordedFactor",
       title: "Recorded Factor",
       type: "number",
-      suffix: "Kg CO₂e/Kg",
+      suffix: "Kg CO₂e/tkm",
     },
     {
       key: "totalEmission",
@@ -83,7 +83,7 @@ export default function StationaryCombustionInputPage({
           fontWeight: "bold",
         })}
       >
-        Acme, Inc. Stationary Combustion Consumption
+        Acme, Inc. Transportation Consumption
       </span>
       <Table columns={columns} data={data} />
     </div>

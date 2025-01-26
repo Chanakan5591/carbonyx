@@ -34,6 +34,7 @@ export default function MenuItem({ icon, text, route }: Props) {
   return route ? (
     <Link
       to={route}
+      prefetch="intent"
       className={hstack({
         gap: 2,
         padding: 2,
