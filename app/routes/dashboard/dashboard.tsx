@@ -231,7 +231,7 @@ export default function Historical({ loaderData }: Route.ComponentProps) {
               m: 2,
             })}
           >
-            Toggle
+            Toggle Monthly/Yearly
           </button>
         </div>
       </div>

@@ -89,15 +89,35 @@ const TableHeader = ({ columns, onSort }: HeaderProps) => {
 interface RowProps {
   rowData: RowData;
   columns: Column[];
+  onEditStart: (data: {
+    id: string;
+    factorId: number;
+    value: number;
+    recordedFactor: number;
+  }) => void;
+  onDelete: (id: string) => void;
 }
 
-const TableRow = ({ rowData, columns }: RowProps) => {
+const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month is 0-indexed
     const year = date.getFullYear();
     return `${day}.${month}.${year}`;
+  };
+
+  const handleEditClick = () => {
+    onEditStart({
+      id: rowData.id as string,
+      factorId: rowData.factorId as number,
+      value: rowData.value as number,
+      recordedFactor: rowData.recordedFactor as number,
+    });
+  };
+
+  const handleDeleteClick = () => {
+    onDelete(rowData.id as string);
   };
 
   return (
@@ -115,7 +135,6 @@ const TableRow = ({ rowData, columns }: RowProps) => {
               borderBottomColor: "neutral.100",
             })}
           >
-            {/* Add prefix and suffix if available */}
             {column.prefix && <span>{column.prefix}</span>}
             {column.type === "timestamp"
               ? formatDate(cellValue as number)
@@ -131,6 +150,33 @@ const TableRow = ({ rowData, columns }: RowProps) => {
           </td>
         );
       })}
+      {/* Edit and Delete Buttons */}
+      <td className={flex({ gap: 2 })}>
+        <button
+          onClick={handleEditClick}
+          className={css({
+            bg: "yellow.400",
+            color: "black",
+            p: 2,
+            borderRadius: "md",
+            "&:hover": { bg: "yellow.500" },
+          })}
+        >
+          Edit
+        </button>
+        <button
+          onClick={handleDeleteClick}
+          className={css({
+            bg: "red.400",
+            color: "white",
+            p: 2,
+            borderRadius: "md",
+            "&:hover": { bg: "red.500" },
+          })}
+        >
+          Delete
+        </button>
+      </td>
     </tr>
   );
 };
@@ -138,13 +184,26 @@ const TableRow = ({ rowData, columns }: RowProps) => {
 interface BodyProps {
   data: RowData[];
   columns: Column[];
+  onEditStart: (data: {
+    id: string;
+    factorId: number;
+    value: number;
+    recordedFactor: number;
+  }) => void;
+  onDelete: (id: string) => void;
 }
 
-const TableBody = ({ data, columns }: BodyProps) => {
+const TableBody = ({ data, columns, onEditStart, onDelete }: BodyProps) => {
   return (
     <tbody>
       {data.map((rowData, index) => (
-        <TableRow key={index} rowData={rowData} columns={columns} />
+        <TableRow
+          onEditStart={onEditStart}
+          onDelete={onDelete}
+          key={index}
+          rowData={rowData}
+          columns={columns}
+        />
       ))}
     </tbody>
   );
@@ -153,9 +212,16 @@ const TableBody = ({ data, columns }: BodyProps) => {
 interface TableProps {
   columns: Column[];
   data: RowData[];
+  onEditStart: (data: {
+    id: string;
+    factorId: number;
+    value: number;
+    recordedFactor: number;
+  }) => void;
+  onDelete: (id: string) => void;
 }
 
-const Table = ({ columns, data }: TableProps) => {
+const Table = ({ columns, data, onEditStart, onDelete }: TableProps) => {
   const [tableData, setTableData] = useState(data);
 
   const handleSort = (columnKey: string, sortDirection: SortDirection) => {
@@ -215,7 +281,12 @@ const Table = ({ columns, data }: TableProps) => {
         })}
       >
         <TableHeader columns={columns} onSort={handleSort} />
-        <TableBody data={tableData} columns={columns} />
+        <TableBody
+          onEditStart={onEditStart}
+          onDelete={onDelete}
+          data={tableData}
+          columns={columns}
+        />
       </table>
     </div>
   );
