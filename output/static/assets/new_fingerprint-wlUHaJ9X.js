@@ -1,0 +1,1 @@
+import{w as r}from"./with-props-KYyzsVgL.js";import{l as t}from"./chunk-D52XG6IA-D4AWUm6F.js";const o=r(function(){return t.jsx("html",{children:t.jsx("head",{children:t.jsx("meta",{httpEquiv:"refresh",content:"0;url=/"})})})});export{o as default};
