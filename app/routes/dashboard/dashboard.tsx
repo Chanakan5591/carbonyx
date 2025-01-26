@@ -35,8 +35,10 @@ export default function Historical({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     const now = new Date();
     const yearRange = getYearRange(now);
-    const initialStartDate = new Date(yearRange.start);
-    const initialEndDate = new Date(yearRange.end);
+    //    const initialStartDate = new Date(yearRange.start);
+    const initialStartDate = new Date("2022-12-31T01:00:00+00:00");
+    //    const initialEndDate = new Date(yearRange.end);
+    const initialEndDate = new Date("2025-01-01T01:00:00+00:00");
     setStartDate(initialStartDate);
     setEndDate(initialEndDate);
     validStartDateRef.current = initialStartDate;
