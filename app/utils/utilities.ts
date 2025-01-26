@@ -1,4 +1,8 @@
-function formatNumber(value: number): string {
+import type { CollectedData } from "~/db/schema";
+import { format } from "date-fns-tz";
+import { fromUnixTime } from "date-fns";
+
+export function formatNumber(value: number): string {
   if (value >= 1000) {
     const suffixes: string[] = ["", "k", "M", "B", "T"];
     const suffixNum: number = Math.floor(("" + value).length / 3);
@@ -14,4 +18,27 @@ function formatNumber(value: number): string {
   }
   return value.toString();
 }
-export { formatNumber };
+
+interface CategorizedData {
+  [key: string]: CollectedData[];
+}
+
+export function categorizeDateByMonth(
+  data: CollectedData[],
+  clientTimezone: string = "Asia/Bangkok",
+) {
+  // might allow modifications of timezone by the client later.
+  return data.reduce<CategorizedData>((acc, item) => {
+    const zonedDate = fromUnixTime(item.timestamp);
+    const monthYearKey = format(zonedDate, "yyyy-MM", {
+      timeZone: clientTimezone,
+    });
+
+    if (!acc[monthYearKey]) {
+      acc[monthYearKey] = [];
+    }
+
+    acc[monthYearKey].push(item);
+    return acc;
+  }, {});
+}

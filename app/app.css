@@ -6,5 +6,16 @@ utilities;
 
 html {
     background-color: #fffaf5;
+}
+
+body {
     font-family: "IBM Plex Sans", sans-serif;
+    font-size: 14px;
+}
+
+#landing {
+    background-image: url("/bg.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }

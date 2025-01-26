@@ -1,4 +1,19 @@
-import { defineConfig } from "@pandacss/dev";
+import { defineConfig, defineTextStyles } from "@pandacss/dev";
+
+export const textStyles = defineTextStyles({
+  body: {
+    description: "The body text style - used in paragraphs",
+    value: {
+      fontFamily: "Inter",
+      fontWeight: "500",
+      fontSize: "12px",
+      lineHeight: "24px",
+      letterSpacing: "0",
+      textDecoration: "None",
+      textTransform: "None",
+    },
+  },
+});
 
 export default defineConfig({
   preflight: true,
@@ -7,6 +22,7 @@ export default defineConfig({
   outdir: "carbonyxation",
   theme: {
     extend: {
+      textStyles,
       tokens: {
         colors: {
           primary: {

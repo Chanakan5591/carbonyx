@@ -15,6 +15,7 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   return (
     <div
+      id="landing"
       className={hstack({
         justify: "space-between",
         alignItems: "center",

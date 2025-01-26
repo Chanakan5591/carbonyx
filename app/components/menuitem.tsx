@@ -38,17 +38,41 @@ export default function MenuItem({ icon, text, route }: Props) {
         gap: 2,
         padding: 2,
         cursor: "pointer",
-        transition: "all 0.4s ease-in-out",
         borderBottom: "1px solid",
         borderBottomColor: "neutral.400",
-        bgGradient: currentRoute === route ? "to-r" : "none",
-        gradientFrom: "white",
-        gradientTo: "accent.50",
+        position: "relative",
+        overflow: "hidden",
+        _before: {
+          content: "''",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          transition: "opacity 0.4s ease-in-out",
+          // Show on active route
+          opacity: currentRoute === route ? 1 : 0,
+          bgGradient: "to-r",
+          // Darker gradient for active route
+          gradientFrom: "white",
+          gradientVia: "accent.100",
+          gradientTo: "accent.200",
+        },
+        _hover: {
+          _before: {
+            opacity: 1,
+            bgGradient: "to-r",
+            gradientFrom: "white",
+            gradientVia: currentRoute === route ? "accent.100" : "accent.50",
+            gradientTo: currentRoute === route ? "accent.200" : "accent.100",
+          },
+        },
       })}
     >
       <div
         className={flex({
           w: 6,
+          zIndex: 1,
           justifyContent: "center",
           alignItems: "center",
           fontWeight: "bold",
@@ -59,6 +83,7 @@ export default function MenuItem({ icon, text, route }: Props) {
       </div>
       <div
         className={css({
+          zIndex: 1,
           fontSize: "sm",
           fontWeight: "medium",
         })}

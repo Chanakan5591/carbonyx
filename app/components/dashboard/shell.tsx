@@ -56,7 +56,11 @@ export default function Shell() {
               icon="information"
               route="/dashboard/info"
             />
-            <MenuItem text="Location" route="/dashboard/location" />
+            <MenuItem text="Electricity" route="/dashboard/electricity" />
+            <MenuItem
+              text="Stationary Fuels"
+              route="/dashboard/stationary_fuels"
+            />
             <MenuItem text="Vehicles" route="/dashboard/vehicles" />
             <MenuItem text="Scopes of Emissions" route="/dashboard/scopes" />
           </div>
