@@ -4,6 +4,7 @@ import Welcome from "../assets/welcome.png";
 import { css } from "carbonyxation/css";
 import { button } from "~/components/button";
 import Logo from "../assets/logo.png";
+import { Link } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -59,9 +60,11 @@ export default function Home() {
           >
             Let us handle the accounting works, so you can focus on the future
           </span>
-          <button className={button({ variant: "solid", color: "primary" })}>
-            Get Started
-          </button>
+          <Link to="/dashboard" prefetch="render">
+            <button className={button({ variant: "solid", color: "primary" })}>
+              Get Started
+            </button>
+          </Link>
         </div>
       </div>
       <div
