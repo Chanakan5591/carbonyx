@@ -20,6 +20,7 @@ export default function Shell() {
           width: "full",
           bg: "white",
           borderBottom: "1px solid",
+          justifyContent: 'space-between'
         })}
       >
         <span
@@ -33,6 +34,7 @@ export default function Shell() {
           <img src={SmallLogo} alt="Carbonyx" width={32} />
           Carbonyx
         </span>
+        <span>Hello</span>
       </div>
       <div
         className={flex({

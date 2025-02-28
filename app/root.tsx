@@ -9,8 +9,9 @@ import {
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
-import { css } from "carbonyxation/css/css";
-import LandingBar from "./components/landingbar";
+
+import { ClerkProvider } from '@clerk/react-router'
+import { rootAuthLoader } from '@clerk/react-router/ssr.server'
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.bunny.net" },
@@ -24,6 +25,10 @@ export const links: Route.LinksFunction = () => [
   },
   { rel: "stylesheet", href: stylesheet },
 ];
+
+export async function loader(args: Route.LoaderArgs) {
+  return rootAuthLoader(args)
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -43,11 +48,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+export default function App({ loaderData }: Route.ComponentProps) {
   return (
-    <>
+    <ClerkProvider loaderData={loaderData}>
       <Outlet />
-    </>
+    </ClerkProvider>
   );
 }
 
