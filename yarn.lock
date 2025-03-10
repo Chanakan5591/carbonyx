@@ -2047,6 +2047,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stytch/core@npm:2.43.0":
+  version: 2.43.0
+  resolution: "@stytch/core@npm:2.43.0"
+  dependencies:
+    uuid: "npm:8.3.2"
+  checksum: 10c0/4e31601f77ac0b52fc4c307e5fa40ea695405e366a90c9033bf43283c50894c4881a8a7af6e31ae72ce3a414ccdc1d7ed421430952080b33ea4bd9d082cfb2db
+  languageName: node
+  linkType: hard
+
+"@stytch/nextjs@npm:^21.4.1":
+  version: 21.4.1
+  resolution: "@stytch/nextjs@npm:21.4.1"
+  peerDependencies:
+    "@stytch/vanilla-js": ^5.0.0
+    react: ">= 17.0.2"
+    react-dom: ">= 17.0.2"
+  checksum: 10c0/63e6797ab43b0e318043e1a63c55300dcfcc8f1368d48c1bd348ebf1fa364aef64e7ed5a425cf750dd20e16e952c57c025f8f32347a112eca78f41875956c8b6
+  languageName: node
+  linkType: hard
+
+"@stytch/vanilla-js@npm:^5.18.2":
+  version: 5.18.2
+  resolution: "@stytch/vanilla-js@npm:5.18.2"
+  dependencies:
+    "@stytch/core": "npm:2.43.0"
+    "@types/google-one-tap": "npm:^1.2.0"
+    type-fest: "npm:4.15.0"
+  checksum: 10c0/e8b8296972b8dbfb31881115e85f952f7c937b99554ba2dc7c68530172aedc441b060d55a4a31b21879ccc83ff68cbe2195c1ec0d2b15b5af05eecdbbbc1ea85
+  languageName: node
+  linkType: hard
+
 "@t3-oss/env-core@npm:^0.11.1":
   version: 0.11.1
   resolution: "@t3-oss/env-core@npm:0.11.1"
@@ -2082,6 +2113,13 @@ __metadata:
   version: 1.0.6
   resolution: "@types/estree@npm:1.0.6"
   checksum: 10c0/cdfd751f6f9065442cd40957c07fd80361c962869aa853c1c2fd03e101af8b9389d8ff4955a43a6fcfa223dd387a089937f95be0f3eec21ca527039fd2d9859a
+  languageName: node
+  linkType: hard
+
+"@types/google-one-tap@npm:^1.2.0":
+  version: 1.2.6
+  resolution: "@types/google-one-tap@npm:1.2.6"
+  checksum: 10c0/6732e170c556f281fe98a06e01bd656f70144554c011cc6e00579474f5b2adb659562bc2f2b031bc13f7ee63d3f0f3bbaf6d3e7c183bfac0640a0496f2ef9faa
   languageName: node
   linkType: hard
 
@@ -2535,6 +2573,8 @@ __metadata:
     "@react-router/dev": "npm:^7.2.0"
     "@react-router/node": "npm:^7.2.0"
     "@react-router/serve": "npm:^7.2.0"
+    "@stytch/nextjs": "npm:^21.4.1"
+    "@stytch/vanilla-js": "npm:^5.18.2"
     "@t3-oss/env-core": "npm:^0.11.1"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19.0.1"
@@ -6108,6 +6148,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"type-fest@npm:4.15.0":
+  version: 4.15.0
+  resolution: "type-fest@npm:4.15.0"
+  checksum: 10c0/677a7da18dbbe07668bdf47fcb976fdcbea77e118156a7245182fdf65633d69228ce773b0022d507636945a8f22b593e09a3c08f695d2aecf96f035ff0186825
+  languageName: node
+  linkType: hard
+
 "type-fest@npm:^4.15.0":
   version: 4.34.1
   resolution: "type-fest@npm:4.34.1"
@@ -6259,6 +6306,15 @@ __metadata:
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10c0/02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672
+  languageName: node
+  linkType: hard
+
+"uuid@npm:8.3.2":
+  version: 8.3.2
+  resolution: "uuid@npm:8.3.2"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 10c0/bcbb807a917d374a49f475fae2e87fdca7da5e5530820ef53f65ba1d12131bd81a92ecf259cc7ce317cbe0f289e7d79fdfebcef9bfa3087c8c8a2fa304c9be54
   languageName: node
   linkType: hard
 

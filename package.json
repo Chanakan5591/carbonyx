@@ -14,6 +14,8 @@
     "@libsql/client": "^0.14.0",
     "@react-router/node": "^7.2.0",
     "@react-router/serve": "^7.2.0",
+    "@stytch/nextjs": "^21.4.1",
+    "@stytch/vanilla-js": "^5.18.2",
     "@t3-oss/env-core": "^0.11.1",
     "chart.js": "^4.4.7",
     "date-fns": "^4.1.0",

@@ -9,7 +9,9 @@ import {
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
-
+import { createStytchB2BUIClient } from "@stytch/nextjs/b2b/ui";
+import { StytchB2BProvider } from "@stytch/nextjs/b2b";
+import { env } from "./env/client";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.bunny.net" },
@@ -24,7 +26,25 @@ export const links: Route.LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
 ];
 
-export async function loader(args: Route.LoaderArgs) {
+export async function loader(args: Route.LoaderArgs) {}
+
+const stytchOptions = {
+  cookieOptions: {
+    opaqueTokenCookieName: "stytch_session",
+    jwtCookieName: "stytch_session_jwt",
+    path: "",
+    availableToSubdomains: false,
+    domain: "",
+  },
+};
+
+const stytch = createStytchB2BUIClient(
+  env.VITE_STYTCH_PUBLIC_TOKEN, // or process.env.STYTCH_PUBLIC_TOKEN for non-Vite based projects
+  stytchOptions,
+);
+
+export default function App({ loaderData }: Route.ComponentProps) {
+  return <Outlet />;
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -37,17 +57,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <StytchB2BProvider stytch={stytch}>{children}</StytchB2BProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
     </html>
-  );
-}
-
-export default function App({ loaderData }: Route.ComponentProps) {
-  return (
-    <Outlet />
   );
 }
 
