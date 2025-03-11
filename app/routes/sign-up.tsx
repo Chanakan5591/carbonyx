@@ -3,9 +3,9 @@ import { flex, grid, vstack, hstack } from "carbonyxation/patterns";
 import { button } from "~/components/button";
 import Bg from "~/assets/authbg.jpg";
 import SmallLogo from "~/assets/logo_64x.png";
-import { SignIn } from "@clerk/react-router";
+import { SignUp } from "@clerk/react-router";
 
-export default function SignInPage() {
+export default function SignUpPage() {
   return (
     <div
       className={flex({
@@ -25,6 +25,8 @@ export default function SignInPage() {
             maxHeight: "svh",
             width: "1/2",
           },
+          pos: "sticky", // make it actually sticky later
+          width: "full",
           padding: 2,
         })}
       >
@@ -74,7 +76,7 @@ export default function SignInPage() {
             width: "24rem",
           })}
         >
-          <SignIn />
+          <SignUp />
         </div>
       </div>
     </div>

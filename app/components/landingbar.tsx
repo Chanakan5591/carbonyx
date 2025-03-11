@@ -3,7 +3,7 @@ import { container, flex, hstack } from "carbonyxation/patterns";
 import { button } from "./button";
 import SmallLogo from "../assets/logo_64x.png";
 import { Link } from "react-router";
-import { SignedOut, SignInButton, SignUpButton } from "@clerk/react-router";
+import { SignedOut, SignedIn, SignUpButton } from "@clerk/react-router";
 
 export default function LandingBar() {
   return (
@@ -63,6 +63,13 @@ export default function LandingBar() {
               </button>
             </SignUpButton>
           </SignedOut>
+          <SignedIn>
+            <button className={button({
+              color: "primary"
+            })}>
+              Dashboard
+            </button>
+          </SignedIn>
         </div>
       </div>
     </nav>

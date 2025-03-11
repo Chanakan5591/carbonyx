@@ -13,10 +13,22 @@ import {
   getYearRange,
   getPreviousYearRange,
 } from "~/utils/time-utils";
+import { getAuth } from '@clerk/react-router/ssr.server'
+import { redirect } from 'react-router'
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const mockOrgId = "1";
-  const data = await provideData(mockOrgId);
+export async function loader(args: Route.LoaderArgs) {
+  const auth = await getAuth(args)
+
+  if (!auth.sessionId) {
+    return redirect('/signin')
+  }
+
+  if (!auth.orgId) {
+    return redirect('/onboarding')
+  }
+
+  const orgId = auth.orgId
+  const data = await provideData(orgId);
 
   return data;
 }
