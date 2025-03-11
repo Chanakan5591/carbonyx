@@ -355,56 +355,56 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@clerk/backend@npm:^1.24.1":
-  version: 1.24.1
-  resolution: "@clerk/backend@npm:1.24.1"
+"@clerk/backend@npm:^1.25.1":
+  version: 1.25.1
+  resolution: "@clerk/backend@npm:1.25.1"
   dependencies:
-    "@clerk/shared": "npm:^2.21.1"
-    "@clerk/types": "npm:^4.46.0"
+    "@clerk/shared": "npm:^3.0.0"
+    "@clerk/types": "npm:^4.47.0"
     cookie: "npm:1.0.2"
     snakecase-keys: "npm:8.0.1"
     tslib: "npm:2.4.1"
-  checksum: 10c0/855fbde58c5cbce192aecec18849fa342d557fb0c85981880811f78eecb68266cfc87444aee269cdaf450bcb34246c190bc281d950d37541eeef11589b8bddfb
+  checksum: 10c0/e4ba1a174b295730a843eade53be26b9f48635210a2cc75678d884e5d7a512e059dc5e50f606dfa708696f55a56e075eac24c9480d400c9443035e5e9404fe72
   languageName: node
   linkType: hard
 
-"@clerk/clerk-react@npm:^5.22.13":
-  version: 5.22.13
-  resolution: "@clerk/clerk-react@npm:5.22.13"
+"@clerk/clerk-react@npm:^5.24.1":
+  version: 5.24.1
+  resolution: "@clerk/clerk-react@npm:5.24.1"
   dependencies:
-    "@clerk/shared": "npm:^2.21.1"
-    "@clerk/types": "npm:^4.46.0"
+    "@clerk/shared": "npm:^3.0.0"
+    "@clerk/types": "npm:^4.47.0"
     tslib: "npm:2.4.1"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0 || ^19.0.0-0
     react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-0
-  checksum: 10c0/49d41363daa6966d15c11b64c30fb4b0d6a13a85b71bd6a426cd797cc32209aa7e319c1a3677e4e670432458a7b131b1b59a66904dbe3e56e99f5a713c1e1095
+  checksum: 10c0/0f3f51e225a643ce9f509dbc3979ce41af38cc0ca4771e4fbea05b8c08336113638324e073028e4866752a95423178348599f7b7ca99c5f59359c2df869bde64
   languageName: node
   linkType: hard
 
-"@clerk/react-router@npm:^1.0.8":
-  version: 1.0.8
-  resolution: "@clerk/react-router@npm:1.0.8"
+"@clerk/react-router@npm:^1.1.4":
+  version: 1.1.4
+  resolution: "@clerk/react-router@npm:1.1.4"
   dependencies:
-    "@clerk/backend": "npm:^1.24.1"
-    "@clerk/clerk-react": "npm:^5.22.13"
-    "@clerk/shared": "npm:^2.21.1"
-    "@clerk/types": "npm:^4.46.0"
+    "@clerk/backend": "npm:^1.25.1"
+    "@clerk/clerk-react": "npm:^5.24.1"
+    "@clerk/shared": "npm:^3.0.0"
+    "@clerk/types": "npm:^4.47.0"
     cookie: "npm:0.7.2"
     tslib: "npm:2.4.1"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0 || ^19.0.0-0
     react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-0
     react-router: ^7.1.2
-  checksum: 10c0/6e2b4c6be9e8aa7f90fb24689bd4c8e11b750004163105686db14f023f0fb70c9d3ea41c6b16970fba80097aa9f37b05d27032f91adec148ac766caace9c7c62
+  checksum: 10c0/ef87bf648af6377501270adcd29a3d4d1410bb805f7d2bca72cf10305487f837771b14bc29a05e5843409bd059c17239799b5bf0ea80ab0aa26d2274e943401e
   languageName: node
   linkType: hard
 
-"@clerk/shared@npm:^2.21.1":
-  version: 2.21.1
-  resolution: "@clerk/shared@npm:2.21.1"
+"@clerk/shared@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@clerk/shared@npm:3.0.0"
   dependencies:
-    "@clerk/types": "npm:^4.46.0"
+    "@clerk/types": "npm:^4.47.0"
     dequal: "npm:2.0.3"
     glob-to-regexp: "npm:0.4.1"
     js-cookie: "npm:3.0.5"
@@ -418,16 +418,16 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c0/9cd090b64f9cc1b5a13ec1f7330a956240aa6731b4b43cea4064697c2ab75c40f538f2199487d027072e887a74272c87cdcc1f6685bef15da434c7eb9bc302f4
+  checksum: 10c0/8a26bae844822b718c57214ec90d5a4388d2fbc3066899ee7907032d05a3ecf8bcec170094b1e0a9cc60f2517c2f7e8993a9eb8b6a722f020152a6b58d616977
   languageName: node
   linkType: hard
 
-"@clerk/types@npm:^4.46.0":
-  version: 4.46.0
-  resolution: "@clerk/types@npm:4.46.0"
+"@clerk/types@npm:^4.47.0":
+  version: 4.47.0
+  resolution: "@clerk/types@npm:4.47.0"
   dependencies:
     csstype: "npm:3.1.3"
-  checksum: 10c0/fd2330920e0e29a8863d000b7aba612bb96d247d1e4a1555aac49f1e1107e15dc7ef08793fecdea04fbc3123acb6ff7f186aefc4ce3d82b5845b7526315dc2c1
+  checksum: 10c0/ac3b3406eb92f6bbcd4a0faf2d2ce0b8a7fb9944cb587e6a1cfb04a662176537307140208fd4c7a03951df211b8ec153cc564b3ecce71c66449719a8df6267ce
   languageName: node
   linkType: hard
 
@@ -1861,23 +1861,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-router/express@npm:7.2.0":
-  version: 7.2.0
-  resolution: "@react-router/express@npm:7.2.0"
+"@react-router/express@npm:7.3.0":
+  version: 7.3.0
+  resolution: "@react-router/express@npm:7.3.0"
   dependencies:
-    "@react-router/node": "npm:7.2.0"
+    "@react-router/node": "npm:7.3.0"
   peerDependencies:
-    express: ^4.17.1
-    react-router: 7.2.0
+    express: ^4.17.1 || ^5
+    react-router: 7.3.0
     typescript: ^5.1.0
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/0b097b7a0bf89f85828a6d74e34cf60146e07b0364614bdc08e783452ba0023902593358d931161c4f0172756eac03548e856aa77eeed5081d38cabec9220d77
+  checksum: 10c0/9bb13ef95d9dd4b75b59b7769bfdf88acec15f2c80d27d0493305b0dc6b475e724dbde6862a4f7ac3fc61f2e728477b3e37b9bb904cd7d67265143cce3124b7b
   languageName: node
   linkType: hard
 
-"@react-router/node@npm:7.2.0, @react-router/node@npm:^7.2.0":
+"@react-router/node@npm:7.2.0":
   version: 7.2.0
   resolution: "@react-router/node@npm:7.2.0"
   dependencies:
@@ -1895,22 +1895,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-router/serve@npm:^7.2.0":
-  version: 7.2.0
-  resolution: "@react-router/serve@npm:7.2.0"
+"@react-router/node@npm:7.3.0, @react-router/node@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "@react-router/node@npm:7.3.0"
   dependencies:
-    "@react-router/express": "npm:7.2.0"
-    "@react-router/node": "npm:7.2.0"
+    "@mjackson/node-fetch-server": "npm:^0.2.0"
+    source-map-support: "npm:^0.5.21"
+    stream-slice: "npm:^0.1.2"
+    undici: "npm:^6.19.2"
+  peerDependencies:
+    react-router: 7.3.0
+    typescript: ^5.1.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/fac68386bf798ddcc9a97258d062534584a13b713fcbfd555b168222c8ea71318922ad87fa74121b6f14cef4465b83933bd780ec3db63af2a54f3f687e5fca17
+  languageName: node
+  linkType: hard
+
+"@react-router/serve@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "@react-router/serve@npm:7.3.0"
+  dependencies:
+    "@react-router/express": "npm:7.3.0"
+    "@react-router/node": "npm:7.3.0"
     compression: "npm:^1.7.4"
     express: "npm:^4.19.2"
     get-port: "npm:5.1.1"
     morgan: "npm:^1.10.0"
     source-map-support: "npm:^0.5.21"
   peerDependencies:
-    react-router: 7.2.0
+    react-router: 7.3.0
   bin:
     react-router-serve: bin.js
-  checksum: 10c0/56809b846b0e9255e7e9102a7d55a0872351c8f9a87b1d1bd2bd98347545f25db235a80bf8e76fb12d43dc3afbeb9e932306862f148cf1177c1531f1d803d3da
+  checksum: 10c0/f5e6c4d4b3e6ebbfc1184de3fa481dbc28c028c8740645f1a732cda0de6966d07d15f804d6327785bd0101f77687d68d4693a0eb5355d32f9ff02270e4b597a7
   languageName: node
   linkType: hard
 
@@ -2529,12 +2547,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "carbonyx-react@workspace:."
   dependencies:
-    "@clerk/react-router": "npm:^1.0.8"
+    "@clerk/backend": "npm:^1.25.1"
+    "@clerk/react-router": "npm:^1.1.4"
     "@libsql/client": "npm:^0.14.0"
     "@pandacss/dev": "npm:^0.51.1"
     "@react-router/dev": "npm:^7.2.0"
-    "@react-router/node": "npm:^7.2.0"
-    "@react-router/serve": "npm:^7.2.0"
+    "@react-router/node": "npm:^7.3.0"
+    "@react-router/serve": "npm:^7.3.0"
     "@t3-oss/env-core": "npm:^0.11.1"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19.0.1"
@@ -2551,7 +2570,7 @@ __metadata:
     react: "npm:^19.0.0"
     react-chartjs-2: "npm:^5.3.0"
     react-dom: "npm:^19.0.0"
-    react-router: "npm:^7.1.3"
+    react-router: "npm:^7.3.0"
     typescript: "npm:^5.7.2"
     vite: "npm:^5.4.11"
     vite-tsconfig-paths: "npm:^5.1.4"
@@ -5392,9 +5411,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:^7.1.3":
-  version: 7.1.3
-  resolution: "react-router@npm:7.1.3"
+"react-router@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "react-router@npm:7.3.0"
   dependencies:
     "@types/cookie": "npm:^0.6.0"
     cookie: "npm:^1.0.1"
@@ -5406,7 +5425,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10c0/f42f7b245533d1adaa00779a0287993a836d5b56039d97a6643a8b3a721ffb92ff47c97cfb36409fec8794ac3c8a884339f588cf21fcd7f6dccdfc834520c76f
+  checksum: 10c0/2965a8a7598afaeb5c4d10c3364452df924bed9b03f6b18d7049e4b93054e2412749d0621b2ff4cdd7791af9fb843148aefbea3db2ffc9f43ef68f9df0c0241d
   languageName: node
   linkType: hard
 

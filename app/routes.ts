@@ -8,6 +8,8 @@ import {
 
 export default [
   layout("routes/landing-layout.tsx", [index("routes/home.tsx")]),
+
+  route("/signin", "routes/sign-in.tsx"),
   ...prefix("/dashboard", [
     layout("routes/dashboard/layout.tsx", [
       route("/", "routes/dashboard/dashboard.tsx"),

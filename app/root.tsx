@@ -10,6 +10,8 @@ import {
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
 
+import { rootAuthLoader } from "@clerk/react-router/ssr.server";
+import { ClerkProvider } from "@clerk/react-router";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.bunny.net" },
@@ -25,6 +27,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export async function loader(args: Route.LoaderArgs) {
+  return rootAuthLoader(args);
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -47,7 +50,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App({ loaderData }: Route.ComponentProps) {
   return (
-    <Outlet />
+    <ClerkProvider
+      loaderData={loaderData}
+      signUpFallbackRedirectUrl="/"
+      signInFallbackRedirectUrl="/"
+    >
+      <Outlet />
+    </ClerkProvider>
   );
 }
 
