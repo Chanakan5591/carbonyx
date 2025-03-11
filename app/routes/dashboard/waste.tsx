@@ -18,16 +18,18 @@ import {
   type CollectedDataWithEmission,
 } from "~/db/schema";
 import type { Route } from "./+types/electricity";
+import { getAuth } from "@clerk/react-router/ssr.server";
 
-const mockOrgId = "1";
 const factorType = "waste"; // Set the factor type here
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader(args: Route.LoaderArgs) {
+  const auth = await getAuth(args);
+  const orgId = auth.orgId!;
   const wasteReleased = await db
     .select()
     .from(collectedData)
     .innerJoin(factors, eq(collectedData.factorId, factors.id))
-    .where(and(eq(factors.type, "waste"), eq(collectedData.orgId, mockOrgId)));
+    .where(and(eq(factors.type, "waste"), eq(collectedData.orgId, orgId)));
 
   // Fetch available factors with 'factor' value
   const availableFactors = await db

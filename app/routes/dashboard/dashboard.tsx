@@ -13,28 +13,38 @@ import {
   getYearRange,
   getPreviousYearRange,
 } from "~/utils/time-utils";
-import { getAuth } from '@clerk/react-router/ssr.server'
-import { redirect } from 'react-router'
+import { getAuth } from "@clerk/react-router/ssr.server";
+import { useOrganizationList } from "@clerk/react-router";
+import { useRevalidator } from "react-router";
 
 export async function loader(args: Route.LoaderArgs) {
-  const auth = await getAuth(args)
+  const auth = await getAuth(args);
 
-  if (!auth.sessionId) {
-    return redirect('/signin')
-  }
+  const orgId = auth.orgId;
+  const data = await provideData(orgId ?? "");
 
-  if (!auth.orgId) {
-    return redirect('/onboarding')
-  }
-
-  const orgId = auth.orgId
-  const data = await provideData(orgId);
-
-  return data;
+  return { orgId, data };
 }
 
-export default function Historical({ loaderData }: Route.ComponentProps) {
-  const data = loaderData;
+export default function Dashboard({ loaderData }: Route.ComponentProps) {
+  const orgList = useOrganizationList({ userMemberships: true })
+
+  const serverData = loaderData;
+  const data = serverData.data
+  const revalidator = useRevalidator()
+
+  useEffect(() => {
+    if (!orgList.isLoaded || orgList.userMemberships.isFetching) return
+
+    if (serverData.orgId === "") {
+      orgList.setActive({
+        organization: orgList.userMemberships.data[0].organization
+      })
+
+      revalidator.revalidate()
+    }
+  }, [orgList.isLoaded, orgList.userMemberships.isFetching])
+
   const [monthYear, setMonthYear] = useState<"month" | "year">("month");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);

@@ -1,3 +1,5 @@
+import { useAuth } from "@clerk/react-router";
+import { getAuth } from "@clerk/react-router/ssr.server";
 import { css } from "carbonyxation/css";
 import { flex } from "carbonyxation/patterns";
 import React, { useState, useEffect, useRef } from "react";
@@ -63,12 +65,14 @@ const DataInput = ({
     }
   }, [filteredFactors]);
 
+  const auth = useAuth();
+  const orgId = auth.orgId!;
+
   const factorValue =
     filteredFactors.find((factor) => factor.id === factorId)?.factor || 0;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const orgId = "1"; // Example orgId
 
     if (editingData) {
       await onEdit(editingData.id, { factorId, value });

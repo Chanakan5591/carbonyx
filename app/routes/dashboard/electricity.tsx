@@ -17,18 +17,21 @@ import {
   type CollectedDataWithEmission,
 } from "~/db/schema";
 import type { Route } from "./+types/electricity";
+import { getAuth } from "@clerk/react-router/ssr.server";
 
-const mockOrgId = "1";
 const factorType = "electricity"; // Set the factor type here
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader(args: Route.LoaderArgs) {
+  const auth = await getAuth(args);
+  const orgId = auth.orgId!;
+
   // Fetch initial data
   const electricity_usage = await db
     .select()
     .from(collectedData)
     .where(
       and(
-        eq(collectedData.orgId, mockOrgId),
+        eq(collectedData.orgId, orgId),
         eq(collectedData.factorId, 36), // You might need a better way to filter initial data
       ),
     );

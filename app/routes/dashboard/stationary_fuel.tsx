@@ -18,11 +18,14 @@ import {
   type CollectedDataWithEmission,
 } from "~/db/schema";
 import type { Route } from "./+types/electricity";
+import { getAuth } from "@clerk/react-router/ssr.server";
 
-const mockOrgId = "1";
 const factorType = "stationary_combustion"; // Set the factor type here
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader(args: Route.LoaderArgs) {
+  const auth = await getAuth(args);
+  const orgId = auth.orgId!;
+
   const stationaryFuelsUsage = await db
     .select()
     .from(collectedData)
@@ -30,7 +33,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     .where(
       and(
         eq(factors.type, "stationary_combustion"),
-        eq(collectedData.orgId, mockOrgId),
+        eq(collectedData.orgId, orgId),
       ),
     );
 

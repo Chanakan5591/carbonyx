@@ -64,11 +64,13 @@ export default function LandingBar() {
             </SignUpButton>
           </SignedOut>
           <SignedIn>
-            <button className={button({
-              color: "primary"
-            })}>
-              Dashboard
-            </button>
+            <Link to='/dashboard'>
+              <button className={button({
+                color: "primary"
+              })}>
+                Dashboard
+              </button>
+            </Link>
           </SignedIn>
         </div>
       </div>

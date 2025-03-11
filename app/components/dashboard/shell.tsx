@@ -3,6 +3,7 @@ import { flex, hstack } from "carbonyxation/patterns";
 import { Outlet } from "react-router";
 import SmallLogo from "~/assets/logo_64x.png";
 import MenuItem from "../menuitem";
+import { OrganizationSwitcher, UserButton } from "@clerk/react-router";
 
 export default function Shell() {
   // Calculate the header height (assuming padding: "4" is 16px on each side, total 32px + assumed content height of 24px)
@@ -33,8 +34,9 @@ export default function Shell() {
         >
           <img src={SmallLogo} alt="Carbonyx" width={32} />
           Carbonyx
+          <OrganizationSwitcher hidePersonal={true} />
         </span>
-        <span>Hello</span>
+        <UserButton />
       </div>
       <div
         className={flex({

@@ -5,10 +5,10 @@ export const env = createEnv({
   server: {
     TURSO_DATABASE_URL: z.string().url().startsWith("libsql://"),
     TURSO_AUTH_TOKEN: z.string(),
+    CLERK_SECRET_KEY: z.string(),
   },
   clientPrefix: "VITE_",
-  client: {
-  },
+  client: {},
 
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
