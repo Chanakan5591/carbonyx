@@ -2,43 +2,114 @@ import { css } from "carbonyxation/css";
 import { flex, hstack } from "carbonyxation/patterns";
 import { useLocation } from "react-router";
 import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 
-interface Props {
-  icon?: "home" | "information" | "history" | "circle" | "question" | "gear";
+interface MenuItemProps {
+  icon?: "home" | "information" | "history" | "circle" | "question" | "gear" | "emissions" | "assets";
   text: string;
   route?: string;
+  children?: React.ReactNode;
+  level?: number;
+  exact?: boolean
 }
 
-// using lucide-react
-function getIcon(icon: Props["icon"]) {
+function getIcon(icon: MenuItemProps["icon"]) {
   switch (icon) {
     case "home":
       return <i className="fa-solid fa-house"></i>;
     case "information":
       return <i className="fa-solid fa-circle-info" />;
     case "history":
-      return <i className="fa-solid fa-circle-info" />;
+      return <i className="fa-solid fa-clock-rotate-left" />;
     case "circle":
       return <i className="fa-light fa-circle" />;
     case "question":
       return <i className="fa-solid fa-circle-question" />;
     case "gear":
       return <i className="fa-solid fa-gear" />;
+    case "emissions":
+      return <i className="fa-solid fa-smog" />;
+    case "assets":
+      return <i className="fa-solid fa-building" />;
     default:
-      return <span>&gt;</span>;
+      return <i className="fa-solid fa-angle-right" />;
   }
 }
 
-export default function MenuItem({ icon, text, route }: Props) {
-  const currentRoute = useLocation().pathname;
-  return route ? (
-    <Link
-      to={route}
-      prefetch="intent"
+export function MenuItem({
+  icon,
+  text,
+  route,
+  children,
+  level = 0,
+  exact = false
+}: MenuItemProps) {
+  const location = useLocation()
+  const currentRoute = location.pathname;
+  const [isOpen, setIsOpen] = useState(false);
+
+  const hasChildren = Boolean(children)
+
+  // Check if this item or any of its children is active
+  const isActive = route && (
+    exact
+      ? currentRoute === route
+      : currentRoute.startsWith(route) && (
+        // Check that the next character is a slash or the end of the string
+        currentRoute.length === route.length ||
+        currentRoute.charAt(route.length) === '/'
+      )
+  );
+
+  // Automatically open submenu if a child is active
+  const isChildActive = currentRoute.startsWith(route || '') && currentRoute !== route;
+
+  useEffect(() => {
+    if (isChildActive) {
+      setIsOpen(true);
+    }
+  }, [isChildActive, location]);
+
+  const menuItemContent = (
+    <>
+      <div
+        className={flex({
+          w: 6,
+          zIndex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "sm",
+        })}
+      >
+        {getIcon(icon)}
+      </div>
+      <div
+        className={css({
+          zIndex: 1,
+          fontSize: "sm",
+          fontWeight: isActive ? "bold" : "medium",
+          flex: 1,
+        })}
+      >
+        {text}
+      </div>
+      {hasChildren && (
+        <div className={css({ transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.3s" })}>
+          <i className="fa-solid fa-angle-right" />
+        </div>
+      )}
+    </>
+  );
+
+  // Wrapper for menu item content
+  const MenuItem = ({ children }: { children: React.ReactNode }) => (
+    <div
       className={hstack({
         gap: 2,
         padding: 2,
-        cursor: "pointer",
+        paddingLeft: `${level * 4 + 2}`, // Increase indentation for submenu items
+        cursor: hasChildren || route ? "pointer" : "default",
         borderBottom: "1px solid",
         borderBottomColor: "neutral.400",
         position: "relative",
@@ -51,10 +122,8 @@ export default function MenuItem({ icon, text, route }: Props) {
           width: "100%",
           height: "100%",
           transition: "opacity 0.4s ease-in-out",
-          // Show on active route
-          opacity: currentRoute === route ? 1 : 0,
+          opacity: isActive ? 1 : 0,
           bgGradient: "to-r",
-          // Darker gradient for active route
           gradientFrom: "white",
           gradientVia: "accent.100",
           gradientTo: "accent.200",
@@ -64,65 +133,73 @@ export default function MenuItem({ icon, text, route }: Props) {
             opacity: 1,
             bgGradient: "to-r",
             gradientFrom: "white",
-            gradientVia: currentRoute === route ? "accent.100" : "accent.50",
-            gradientTo: currentRoute === route ? "accent.200" : "accent.100",
+            gradientVia: isActive ? "accent.100" : "accent.50",
+            gradientTo: isActive ? "accent.200" : "accent.100",
           },
         },
       })}
+      onClick={() => hasChildren && setIsOpen(!isOpen)}
     >
-      <div
-        className={flex({
-          w: 6,
-          zIndex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          fontWeight: "bold",
-          fontSize: "sm",
-        })}
-      >
-        {getIcon(icon)}
-      </div>
-      <div
-        className={css({
-          zIndex: 1,
-          fontSize: "sm",
-          fontWeight: "medium",
-        })}
-      >
-        {text}
-      </div>
-    </Link>
-  ) : (
-    <span
-      className={hstack({
-        gap: 2,
-        padding: 2,
-        cursor: "default",
-        transition: "all 0.4s ease-in-out",
-        borderBottom: "1px solid",
-        borderBottomColor: "neutral.400",
-        bgGradient: "none",
-      })}
-    >
-      <div
-        className={flex({
-          w: 6,
-          justifyContent: "center",
-          alignItems: "center",
-          fontWeight: "bold",
-          fontSize: "sm",
-        })}
-      >
-        {getIcon(icon)}
-      </div>
-      <div
-        className={css({
-          fontSize: "sm",
-          fontWeight: "medium",
-        })}
-      >
-        {text}
-      </div>
-    </span>
+      {children}
+    </div>
+  );
+
+  return (
+    <>
+      {route && !hasChildren ? (
+        <Link
+          to={route}
+          prefetch="intent"
+          className={css({ display: "block" })}
+        >
+          <MenuItem>{menuItemContent}</MenuItem>
+        </Link>
+      ) : (
+        <MenuItem>{menuItemContent}</MenuItem>
+      )}
+
+      {hasChildren && (
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className={css({ overflow: "hidden" })}
+            >
+              {children}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+    </>
+  );
+}
+
+interface MenuSectionProps {
+  children: React.ReactNode;
+  title?: string;
+}
+
+export function MenuSection({ children, title }: MenuSectionProps) {
+  return (
+    <div className={css({ marginBottom: 2 })}>
+      {title && (
+        <div
+          className={css({
+            fontSize: "xs",
+            fontWeight: "semibold",
+            textTransform: "uppercase",
+            color: "neutral.600",
+            padding: "2",
+            paddingLeft: "4",
+          })}
+        >
+          {title}
+        </div>
+      )}
+      {children}
+    </div>
   );
 }

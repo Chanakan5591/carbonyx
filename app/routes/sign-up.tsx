@@ -24,6 +24,8 @@ export default function SignUpPage() {
             height: "full",
             maxHeight: "svh",
             width: "1/2",
+            left: 0,
+            top: 0
           },
           pos: "sticky", // make it actually sticky later
           width: "full",

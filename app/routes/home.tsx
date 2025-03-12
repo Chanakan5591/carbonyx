@@ -4,9 +4,10 @@ import Welcome from "../assets/welcome.png";
 import { css } from "carbonyxation/css";
 import { button } from "~/components/button";
 import Logo from "../assets/logo.png";
+import { SignedOut, SignedIn, SignUpButton } from "@clerk/react-router";
 import { Link } from "react-router";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ }: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
     { name: "description", content: "Welcome to React Router!" },
@@ -60,11 +61,20 @@ export default function Home() {
           >
             Let us handle the accounting works, so you can focus on the future
           </span>
-          <Link to="/dashboard" prefetch="render">
-            <button className={button({ variant: "solid", color: "primary" })}>
-              Get Started
-            </button>
-          </Link>
+          <SignedOut>
+            <SignUpButton>
+              <button className={button({ variant: "solid", color: "primary" })}>
+                Get Started
+              </button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <Link to='/dashboard'>
+              <button className={button({ variant: "solid", color: "primary" })}>
+                Dashboard
+              </button>
+            </Link>
+          </SignedIn>
         </div>
       </div>
       <div

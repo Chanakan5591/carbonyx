@@ -2,7 +2,7 @@ import { css } from "carbonyxation/css";
 import { flex, hstack } from "carbonyxation/patterns";
 import { Outlet } from "react-router";
 import SmallLogo from "~/assets/logo_64x.png";
-import MenuItem from "../menuitem";
+import { MenuItem, MenuSection } from "../menuitem";
 import { OrganizationSwitcher, UserButton } from "@clerk/react-router";
 
 export default function Shell() {
@@ -53,22 +53,29 @@ export default function Shell() {
             bg: "white",
             borderRight: "1px solid",
             justifyContent: "space-between",
+            overflowY: "auto"
           })}
         >
           <div>
-            <MenuItem text="Dashboard" icon="home" route="/dashboard" />
-            <MenuItem
-              text="Information"
-              icon="information"
-              route="/dashboard/info"
-            />
-            <MenuItem text="Electricity" route="/dashboard/electricity" />
-            <MenuItem
-              text="Stationary Fuels"
-              route="/dashboard/stationary_fuels"
-            />
-            <MenuItem text="Transportation" route="/dashboard/transportation" />
-            <MenuItem text="Waste" route="/dashboard/waste" />
+            <MenuSection>
+              <MenuItem text="Dashboard" icon="home" route="/dashboard" exact />
+              <MenuItem
+                text="Information"
+                icon="information"
+                route="/dashboard/info"
+              />
+              <MenuItem text="Manual Emissions" icon="emissions" route="/dashboard/emissions">
+                <MenuItem text="Electricity" route="/dashboard/electricity" />
+                <MenuItem
+                  text="Stationary Fuels"
+                  route="/dashboard/stationary_fuels"
+                />
+                <MenuItem text="Transportation" route="/dashboard/transportation" />
+                <MenuItem text="Waste" route="/dashboard/waste" />
+              </MenuItem>
+
+              <MenuItem text="Assets" icon="assets" route="/dashboard/assets" />
+            </MenuSection>
           </div>
           <div>
             <hr

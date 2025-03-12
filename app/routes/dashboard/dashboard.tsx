@@ -1,50 +1,31 @@
 import "chart.js/auto";
 import { Bar } from "react-chartjs-2";
 import { css } from "carbonyxation/css";
-import { flex, vstack, hstack } from "carbonyxation/patterns";
+import { flex, hstack } from "carbonyxation/patterns";
 import Indicator from "~/components/indicator";
 import type { Route } from "./+types/dashboard";
 import { provideData } from "~/utils/emission-provider.server";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { monthlyOptions, yearlyOptions } from "~/utils/chart-options";
 import {
   formatMonthYear,
-  getMonthRange,
   getYearRange,
   getPreviousYearRange,
 } from "~/utils/time-utils";
 import { getAuth } from "@clerk/react-router/ssr.server";
-import { useOrganizationList } from "@clerk/react-router";
-import { useRevalidator } from "react-router";
+import { Await } from "react-router";
 
-export async function loader(args: Route.LoaderArgs) {
-  const auth = await getAuth(args);
+export function loader(args: Route.LoaderArgs) {
+  const auth = getAuth(args);
+  const orgId = auth.then(auth => auth.orgId);
 
-  const orgId = auth.orgId;
-  const data = await provideData(orgId ?? "");
+  // Not awaited - will be resolved later in the component
+  const data = orgId.then(id => provideData(id ?? ""));
 
-  return { orgId, data };
+  return data;
 }
 
-export default function Dashboard({ loaderData }: Route.ComponentProps) {
-  const orgList = useOrganizationList({ userMemberships: true })
-
-  const serverData = loaderData;
-  const data = serverData.data
-  const revalidator = useRevalidator()
-
-  useEffect(() => {
-    if (!orgList.isLoaded || orgList.userMemberships.isFetching) return
-
-    if (serverData.orgId === "") {
-      orgList.setActive({
-        organization: orgList.userMemberships.data[0].organization
-      })
-
-      revalidator.revalidate()
-    }
-  }, [orgList.isLoaded, orgList.userMemberships.isFetching])
-
+export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
   const [monthYear, setMonthYear] = useState<"month" | "year">("month");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -57,92 +38,18 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     const now = new Date();
     const yearRange = getYearRange(now);
-    //    const initialStartDate = new Date(yearRange.start);
-    const initialStartDate = new Date("2022-12-31T01:00:00+00:00");
-    //    const initialEndDate = new Date(yearRange.end);
-    const initialEndDate = new Date("2025-01-01T01:00:00+00:00");
+    const initialStartDate = new Date(yearRange.start);
+    const initialEndDate = new Date(yearRange.end);
     setStartDate(initialStartDate);
     setEndDate(initialEndDate);
     validStartDateRef.current = initialStartDate;
     validEndDateRef.current = initialEndDate;
   }, []);
 
-  // --- Filtering Logic ---
-  const filteredData = useMemo(() => {
-    // Use valid dates from refs for filtering
-    if (!validStartDateRef.current || !validEndDateRef.current) {
-      return monthYear === "month"
-        ? data.monthly.allMonths
-        : data.yearly.allYears;
-    }
-
-    const startTimestamp = validStartDateRef.current.getTime() / 1000;
-    const endTimestamp = validEndDateRef.current.getTime() / 1000;
-
-    if (monthYear === "month") {
-      const labels = data.monthly.allMonths.labels
-        .filter((label) => {
-          const date = new Date(label + "-01");
-          const timestamp = date.getTime() / 1000;
-          return timestamp >= startTimestamp && timestamp <= endTimestamp;
-        })
-        .map((label) =>
-          formatMonthYear(new Date(label + "-01").getTime() / 1000),
-        );
-
-      const filteredMonths = data.monthly.allMonths.datasets.map((dataset) => ({
-        ...dataset,
-        data: dataset.data
-          .filter((d) => {
-            const date = new Date(d.month + "-01");
-            const timestamp = date.getTime() / 1000;
-            return timestamp >= startTimestamp && timestamp <= endTimestamp;
-          })
-          .map((d) => ({
-            x: formatMonthYear(new Date(d.month + "-01").getTime() / 1000),
-            y: d.emissions,
-          })),
-      }));
-
-      return {
-        labels,
-        datasets: filteredMonths,
-      };
-    } else {
-      const labels = data.yearly.allYears.labels.filter((label) => {
-        const year = parseInt(label);
-        const yearStart = new Date(year, 0, 1).getTime() / 1000;
-        const yearEnd = new Date(year, 11, 31, 23, 59, 59).getTime() / 1000;
-        return yearStart >= startTimestamp && yearEnd <= endTimestamp;
-      });
-
-      const filteredYears = data.yearly.allYears.datasets.map((dataset) => ({
-        ...dataset,
-        data: dataset.data
-          .filter((d) => {
-            const year = parseInt(d.month);
-            const yearStart = new Date(year, 0, 1).getTime() / 1000;
-            const yearEnd = new Date(year, 11, 31, 23, 59, 59).getTime() / 1000;
-            return yearStart >= startTimestamp && yearEnd <= endTimestamp;
-          })
-          .map((d) => ({
-            x: d.month,
-            y: d.emissions,
-          })),
-      }));
-
-      return {
-        labels,
-        datasets: filteredYears,
-      };
-    }
-  }, [data, monthYear, validStartDateRef.current, validEndDateRef.current]); // Depend on ref values
-
-  // --- Quick Date Range Selection ---
+  // --- Handle Date Range Selection ---
   const handleDateRangeSelect = (range: string) => {
     const now = new Date();
     let newStartDate: Date, newEndDate: Date;
-
     switch (range) {
       case "thisYear":
         const thisYearRange = getYearRange(now);
@@ -165,7 +72,6 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
       default:
         return;
     }
-
     setStartDate(newStartDate);
     setEndDate(newEndDate);
     validStartDateRef.current = newStartDate;
@@ -199,7 +105,6 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
 
   // --- Handle Blur (Focus Loss) ---
   const handleStartDateBlur = () => {
-    // If start date is invalid or after end date, revert to the last valid start date
     if (
       !startDate ||
       isNaN(startDate.getTime()) ||
@@ -210,13 +115,76 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
   };
 
   const handleEndDateBlur = () => {
-    // If end date is invalid or before start date, revert to the last valid end date
     if (
       !endDate ||
       isNaN(endDate.getTime()) ||
       (startDate && endDate < startDate)
     ) {
       setEndDate(validEndDateRef.current);
+    }
+  };
+
+  const getFilteredData = (dashboardData, monthYearView) => {
+    // Use valid dates from refs for filtering
+    if (!validStartDateRef.current || !validEndDateRef.current) {
+      return monthYearView === "month"
+        ? dashboardData.monthly.allMonths
+        : dashboardData.yearly.allYears;
+    }
+    const startTimestamp = validStartDateRef.current.getTime() / 1000;
+    const endTimestamp = validEndDateRef.current.getTime() / 1000;
+    if (monthYearView === "month") {
+      const labels = dashboardData.monthly.allMonths.labels
+        .filter((label) => {
+          const date = new Date(label + "-01");
+          const timestamp = date.getTime() / 1000;
+          return timestamp >= startTimestamp && timestamp <= endTimestamp;
+        })
+        .map((label) =>
+          formatMonthYear(new Date(label + "-01").getTime() / 1000),
+        );
+      const filteredMonths = dashboardData.monthly.allMonths.datasets.map((dataset) => ({
+        ...dataset,
+        data: dataset.data
+          .filter((d) => {
+            const date = new Date(d.month + "-01");
+            const timestamp = date.getTime() / 1000;
+            return timestamp >= startTimestamp && timestamp <= endTimestamp;
+          })
+          .map((d) => ({
+            x: formatMonthYear(new Date(d.month + "-01").getTime() / 1000),
+            y: d.emissions,
+          })),
+      }));
+      return {
+        labels,
+        datasets: filteredMonths,
+      };
+    } else {
+      const labels = dashboardData.yearly.allYears.labels.filter((label) => {
+        const year = parseInt(label);
+        const yearStart = new Date(year, 0, 1).getTime() / 1000;
+        const yearEnd = new Date(year, 11, 31, 23, 59, 59).getTime() / 1000;
+        return yearStart >= startTimestamp && yearEnd <= endTimestamp;
+      });
+      const filteredYears = dashboardData.yearly.allYears.datasets.map((dataset) => ({
+        ...dataset,
+        data: dataset.data
+          .filter((d) => {
+            const year = parseInt(d.month);
+            const yearStart = new Date(year, 0, 1).getTime() / 1000;
+            const yearEnd = new Date(year, 11, 31, 23, 59, 59).getTime() / 1000;
+            return yearStart >= startTimestamp && yearEnd <= endTimestamp;
+          })
+          .map((d) => ({
+            x: d.month,
+            y: d.emissions,
+          })),
+      }));
+      return {
+        labels,
+        datasets: filteredYears,
+      };
     }
   };
 
@@ -257,6 +225,7 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
           </button>
         </div>
       </div>
+
       {/* Date Range Selection */}
       <div className={hstack({ gap: 2, alignItems: "center" })}>
         <div>
@@ -336,42 +305,83 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
         </button>
       </div>
 
+      {/* Use Suspense and Await for the data */}
+      <Suspense fallback={<LoadingIndicators />}>
+        <Await
+          resolve={data}
+          errorElement={<ErrorDisplay />}
+        >
+          {(resolvedData) => (
+            <>
+              <div className={hstack()}>
+                <Indicator
+                  label="Net Emissions"
+                  value={
+                    monthYear === "month"
+                      ? resolvedData.monthly.latestNetEmissionsTonnes
+                      : resolvedData.yearly.latestNetEmissionsTonnes
+                  }
+                  previous={
+                    monthYear === "month"
+                      ? resolvedData.monthly.previousNetEmissionsTonnes
+                      : resolvedData.yearly.previousNetEmissionsTonnes
+                  }
+                  unit="tCO₂e"
+                />
+                <Indicator
+                  label="Gross Emissions"
+                  value={
+                    monthYear === "month"
+                      ? resolvedData.monthly.latestGrossEmissionsTonnes
+                      : resolvedData.yearly.latestGrossEmissionsTonnes
+                  }
+                  previous={
+                    monthYear === "month"
+                      ? resolvedData.monthly.previousGrossEmissionsTonnes
+                      : resolvedData.yearly.previousGrossEmissionsTonnes
+                  }
+                  unit="tCO₂e"
+                />
+                <Indicator
+                  label="Total Offset"
+                  value={resolvedData.yearly.latestOffsetTonnes}
+                  previous={resolvedData.yearly.previousOffsetTonnes}
+                  unit="tCO₂e"
+                  valueTrend="positive"
+                />
+              </div>
+              <div
+                className={flex({
+                  bg: "white",
+                  w: "full",
+                  rounded: "2xl",
+                  h: "40rem",
+                  p: 4,
+                  border: "1px solid",
+                })}
+              >
+                {monthYear === "month" ? (
+                  <Bar data={getFilteredData(resolvedData, monthYear)} options={monthlyOptions} />
+                ) : (
+                  <Bar data={getFilteredData(resolvedData, monthYear)} options={yearlyOptions} />
+                )}
+              </div>
+            </>
+          )}
+        </Await>
+      </Suspense>
+    </div>
+  );
+}
+
+// Loading indicator component for the Suspense fallback
+function LoadingIndicators() {
+  return (
+    <>
       <div className={hstack()}>
-        <Indicator
-          label="Net Emissions"
-          value={
-            monthYear === "month"
-              ? data.monthly.latestNetEmissionsTonnes
-              : data.yearly.latestNetEmissionsTonnes
-          }
-          previous={
-            monthYear === "month"
-              ? data.monthly.previousNetEmissionsTonnes
-              : data.yearly.previousNetEmissionsTonnes
-          }
-          unit="tCO₂e"
-        />
-        <Indicator
-          label="Gross Emissions"
-          value={
-            monthYear === "month"
-              ? data.monthly.latestGrossEmissionsTonnes
-              : data.yearly.latestGrossEmissionsTonnes
-          }
-          previous={
-            monthYear === "month"
-              ? data.monthly.previousGrossEmissionsTonnes
-              : data.yearly.previousGrossEmissionsTonnes
-          }
-          unit="tCO₂e"
-        />
-        <Indicator
-          label="Total Offset"
-          value={data.yearly.latestOffsetTonnes}
-          previous={data.yearly.previousOffsetTonnes}
-          unit="tCO₂e"
-          valueTrend="positive"
-        />
+        <IndicatorSkeleton />
+        <IndicatorSkeleton />
+        <IndicatorSkeleton />
       </div>
       <div
         className={flex({
@@ -381,15 +391,40 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
           h: "40rem",
           p: 4,
           border: "1px solid",
+          justifyContent: "center",
+          alignItems: "center",
         })}
       >
-        {/* Use filteredData here */}
-        {monthYear === "month" ? (
-          <Bar data={filteredData} options={monthlyOptions} />
-        ) : (
-          <Bar data={filteredData} options={yearlyOptions} />
-        )}
+        <div>Loading chart data...</div>
       </div>
+    </>
+  );
+}
+
+// Error display component
+function ErrorDisplay() {
+  return (
+    <div className={css({ p: 4, color: "red" })}>
+      <h2>Error Loading Data</h2>
+      <p>There was a problem loading the dashboard data. Please try again later.</p>
+    </div>
+  );
+}
+
+// Simple skeleton for indicators
+function IndicatorSkeleton() {
+  return (
+    <div className={css({
+      w: "full",
+      p: 4,
+      bg: "gray-100",
+      rounded: "xl",
+      m: 2,
+      h: "6rem",
+      animation: "pulse 1.5s infinite"
+    })}>
+      <div className={css({ w: "70%", h: "1rem", bg: "gray-200", mb: 2, rounded: "md" })}></div>
+      <div className={css({ w: "40%", h: "2rem", bg: "gray-200", rounded: "md" })}></div>
     </div>
   );
 }
