@@ -16,7 +16,8 @@ import { getAuth } from "@clerk/react-router/ssr.server";
 import { Await } from "react-router";
 import { button } from "~/components/button";
 
-import MonthYearRangePicker, { type DateRange } from "~/components/monthyearpicker";
+import MonthYearRangePicker, { type DateOption, type DateRange } from "~/components/monthyearpicker";
+import { format } from "date-fns";
 
 export function loader(args: Route.LoaderArgs) {
   const auth = getAuth(args);
@@ -30,8 +31,6 @@ export function loader(args: Route.LoaderArgs) {
 
 export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
   const [monthYear, setMonthYear] = useState<"month" | "year">("month");
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
 
   // Use refs to track valid start and end dates
   const validStartDateRef = useRef<Date | null>(null);
@@ -43,6 +42,9 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
   });
 
   const handleRangeChange = (range: DateRange) => {
+    validStartDateRef.current = range.startDate?.date || null;
+    validEndDateRef.current = range.endDate?.date || null;
+
     setDateRange(range);
 
     if (range.startDate && range.endDate) {
@@ -54,96 +56,42 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
     }
   };
 
+  useEffect(() => {
+    validStartDateRef.current = dateRange.startDate?.date
+    validEndDateRef.current = dateRange.endDate?.date
+  }, [dateRange])
+
   // Set default start and end dates to the current year
   useEffect(() => {
     const now = new Date();
     const yearRange = getYearRange(now);
     const initialStartDate = new Date(yearRange.start);
     const initialEndDate = new Date(yearRange.end);
-    setStartDate(initialStartDate);
-    setEndDate(initialEndDate);
+
+    const startDateOption: DateOption = {
+      date: initialStartDate,
+      value: initialStartDate,
+      label: `From: ${format(initialStartDate, 'MMM yyyy')}`,
+      isStart: true
+    }
+
+    const endDateOption: DateOption = {
+      date: initialEndDate,
+      value: initialEndDate,
+      label: `To: ${format(initialEndDate, 'MMM yyyy')}`
+    }
+
+    setDateRange({
+      startDate: startDateOption,
+      endDate: endDateOption
+    })
+
     validStartDateRef.current = initialStartDate;
     validEndDateRef.current = initialEndDate;
   }, []);
 
   // --- Handle Date Range Selection ---
-  const handleDateRangeSelect = (range: string) => {
-    const now = new Date();
-    let newStartDate: Date, newEndDate: Date;
-    switch (range) {
-      case "thisYear":
-        const thisYearRange = getYearRange(now);
-        newStartDate = new Date(thisYearRange.start);
-        newEndDate = new Date(thisYearRange.end);
-        break;
-      case "lastYear":
-        const lastYearRange = getPreviousYearRange(now);
-        newStartDate = new Date(lastYearRange.start);
-        newEndDate = new Date(lastYearRange.end);
-        break;
-      case "last3Months":
-        newEndDate = now;
-        newStartDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-        break;
-      case "last6Months":
-        newEndDate = now;
-        newStartDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-        break;
-      default:
-        return;
-    }
-    setStartDate(newStartDate);
-    setEndDate(newEndDate);
-    validStartDateRef.current = newStartDate;
-    validEndDateRef.current = newEndDate;
-  };
-
   // --- Handle Date Input Changes ---
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = new Date(e.target.value);
-    if (!isNaN(newDate.getTime())) {
-      setStartDate(newDate);
-      if (!endDate || newDate <= endDate) {
-        validStartDateRef.current = newDate;
-      }
-    } else {
-      setStartDate(e.target.value as unknown as Date); // Allow invalid input temporarily
-    }
-  };
-
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = new Date(e.target.value);
-    if (!isNaN(newDate.getTime())) {
-      setEndDate(newDate);
-      if (!startDate || newDate >= startDate) {
-        validEndDateRef.current = newDate;
-      }
-    } else {
-      setEndDate(e.target.value as unknown as Date); // Allow invalid input temporarily
-    }
-  };
-
-  // --- Handle Blur (Focus Loss) ---
-  const handleStartDateBlur = () => {
-    if (
-      !startDate ||
-      isNaN(startDate.getTime()) ||
-      (endDate && startDate > endDate)
-    ) {
-      setStartDate(validStartDateRef.current);
-    }
-  };
-
-  const handleEndDateBlur = () => {
-    if (
-      !endDate ||
-      isNaN(endDate.getTime()) ||
-      (startDate && endDate < startDate)
-    ) {
-      setEndDate(validEndDateRef.current);
-    }
-  };
-
   const getFilteredData = (dashboardData, monthYearView) => {
     // Use valid dates from refs for filtering
     if (!validStartDateRef.current || !validEndDateRef.current) {
@@ -416,9 +364,17 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
                 })}
               >
                 {monthYear === "month" ? (
-                  <Bar data={getFilteredData(resolvedData, monthYear)} options={monthlyOptions} />
+                  <Bar
+                    key={`chart-${monthYear}-${dateRange.startDate?.date?.getTime() || 0}-${dateRange.endDate?.date?.getTime() || 0}`}
+                    data={getFilteredData(resolvedData, monthYear)}
+                    options={monthlyOptions}
+                  />
                 ) : (
-                  <Bar data={getFilteredData(resolvedData, monthYear)} options={yearlyOptions} />
+                  <Bar
+                    key={`chart-${monthYear}-${dateRange.startDate?.date?.getTime() || 0}-${dateRange.endDate?.date?.getTime() || 0}`}
+                    data={getFilteredData(resolvedData, monthYear)}
+                    options={yearlyOptions}
+                  />
                 )}
               </div>
             </>

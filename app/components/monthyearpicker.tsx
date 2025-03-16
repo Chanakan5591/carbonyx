@@ -19,7 +19,7 @@ import { vstack } from 'carbonyxation/patterns';
 import { toast } from 'sonner'
 
 // Define the interface for a month/year option
-interface DateOption {
+export interface DateOption {
   date: Date;
   value: Date;
   label: string;
