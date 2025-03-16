@@ -1,6 +1,6 @@
 import { css } from "carbonyxation/css";
 import { flex, hstack } from "carbonyxation/patterns";
-import { Outlet } from "react-router";
+import { Outlet, Link } from "react-router";
 import SmallLogo from "~/assets/logo_64x.png";
 import { MenuItem, MenuSection } from "../menuitem";
 import { OrganizationSwitcher, UserButton } from "@clerk/react-router";
@@ -21,21 +21,23 @@ export default function Shell() {
           width: "full",
           bg: "white",
           borderBottom: "1px solid",
-          justifyContent: 'space-between'
+          justifyContent: "space-between",
         })}
       >
-        <span
-          className={flex({
-            fontSize: "xl",
-            fontWeight: "bold",
-            alignItems: "center",
-            gap: 2,
-          })}
-        >
-          <img src={SmallLogo} alt="Carbonyx" width={32} />
-          Carbonyx
-          <OrganizationSwitcher hidePersonal={true} />
-        </span>
+        <Link to="/dashboard">
+          <span
+            className={flex({
+              fontSize: "xl",
+              fontWeight: "bold",
+              alignItems: "center",
+              gap: 2,
+            })}
+          >
+            <img src={SmallLogo} alt="Carbonyx" width={32} />
+            Carbonyx
+            <OrganizationSwitcher hidePersonal={true} />
+          </span>
+        </Link>
         <UserButton />
       </div>
       <div
@@ -53,28 +55,29 @@ export default function Shell() {
             bg: "white",
             borderRight: "1px solid",
             justifyContent: "space-between",
-            overflowY: "auto"
+            overflowY: "auto",
           })}
         >
           <div>
             <MenuSection>
               <MenuItem text="Dashboard" icon="home" route="/dashboard" exact />
+              <MenuItem text="Assets" icon="assets" route="/dashboard/assets" />
               <MenuItem
-                text="Information"
-                icon="information"
-                route="/dashboard/info"
-              />
-              <MenuItem text="Manual Emissions" icon="emissions" route="/dashboard/emissions">
+                text="Manual Emissions"
+                icon="emissions"
+                route="/dashboard/emissions"
+              >
                 <MenuItem text="Electricity" route="/dashboard/electricity" />
                 <MenuItem
                   text="Stationary Fuels"
                   route="/dashboard/stationary_fuels"
                 />
-                <MenuItem text="Transportation" route="/dashboard/transportation" />
+                <MenuItem
+                  text="Transportation"
+                  route="/dashboard/transportation"
+                />
                 <MenuItem text="Waste" route="/dashboard/waste" />
               </MenuItem>
-
-              <MenuItem text="Assets" icon="assets" route="/dashboard/assets" />
             </MenuSection>
           </div>
           <div>

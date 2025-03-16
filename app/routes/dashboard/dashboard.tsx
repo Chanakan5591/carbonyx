@@ -14,6 +14,9 @@ import {
 } from "~/utils/time-utils";
 import { getAuth } from "@clerk/react-router/ssr.server";
 import { Await } from "react-router";
+import { button } from "~/components/button";
+
+import MonthYearRangePicker, { type DateRange } from "~/components/monthyearpicker";
 
 export function loader(args: Route.LoaderArgs) {
   const auth = getAuth(args);
@@ -33,6 +36,23 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
   // Use refs to track valid start and end dates
   const validStartDateRef = useRef<Date | null>(null);
   const validEndDateRef = useRef<Date | null>(null);
+
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: null,
+    endDate: null,
+  });
+
+  const handleRangeChange = (range: DateRange) => {
+    setDateRange(range);
+
+    if (range.startDate && range.endDate) {
+      console.log('Range changed:', {
+        startDate: range.startDate.value.toISOString(),
+        endDate: range.endDate.value.toISOString()
+      });
+      // Do something with the selected range
+    }
+  };
 
   // Set default start and end dates to the current year
   useEffect(() => {
@@ -198,111 +218,143 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
         h: "full",
       })}
     >
-      <div className={hstack({})}>
+      <div className={hstack({
+        justifyContent: "space-between"
+      })}>
         <span
           className={css({
             fontSize: "xl",
             fontWeight: "bold",
           })}
         >
-          Welcome to Acme, Inc.
+          Emission Dashboard
         </span>
-        <div>
-          {/* A switch to set monthly or yearly */}
+        <div className={hstack()}>
+          <MonthYearRangePicker value={dateRange} onChange={handleRangeChange} />
+
           <button
             onClick={() =>
               setMonthYear((prev) => (prev === "month" ? "year" : "month"))
             }
-            className={css({
-              bg: monthYear === "month" ? "blue" : "gray",
-              color: "white",
-              p: 2,
-              rounded: "md",
-              m: 2,
+            className={button({
+              color: 'primary'
             })}
           >
-            Toggle Monthly/Yearly
+            {monthYear === 'year' ? 'Toggle Monthly' : 'Toggle Yearly'}
           </button>
         </div>
+
       </div>
 
-      {/* Date Range Selection */}
-      <div className={hstack({ gap: 2, alignItems: "center" })}>
+      <div className={hstack()}>
+        {/* Date Range Selection */}
         <div>
-          <label htmlFor="start-date">Start Date:</label>
-          <input
-            type="date"
-            id="start-date"
-            value={
-              startDate && !isNaN(startDate.getTime())
-                ? startDate.toISOString().slice(0, 10)
-                : ""
-            }
-            onChange={handleStartDateChange}
-            onBlur={handleStartDateBlur}
-            className={css({ p: 1, rounded: "md", border: "1px solid gray" })}
-          />
-        </div>
-        <div>
-          <label htmlFor="end-date">End Date:</label>
-          <input
-            type="date"
-            id="end-date"
-            value={
-              endDate && !isNaN(endDate.getTime())
-                ? endDate.toISOString().slice(0, 10)
-                : ""
-            }
-            onChange={handleEndDateChange}
-            onBlur={handleEndDateBlur}
-            className={css({ p: 1, rounded: "md", border: "1px solid gray" })}
-          />
+          <div className={hstack({ gap: 2, alignItems: "center" })}>
+            {/*
+            <div>
+              <label htmlFor="start-date">Start Date:</label>
+              <input
+                type="date"
+                id="start-date"
+                value={
+                  startDate && !isNaN(startDate.getTime())
+                    ? startDate.toISOString().slice(0, 10)
+                    : ""
+                }
+                onChange={handleStartDateChange}
+                onBlur={handleStartDateBlur}
+                className={css({
+                  border: 1,
+                  borderStyle: "solid",
+                  borderColor: "black",
+                  padding: 2,
+                  paddingX: 4,
+                  rounded: "lg",
+                  width: "full",
+                  backgroundColor: "white",
+                })}
+              />
+            </div>
+            <div>
+              <label htmlFor="end-date">End Date:</label>
+              <input
+                type="date"
+                id="end-date"
+                value={
+                  endDate && !isNaN(endDate.getTime())
+                    ? endDate.toISOString().slice(0, 10)
+                    : ""
+                }
+                onChange={handleEndDateChange}
+                onBlur={handleEndDateBlur}
+                className={css({
+                  border: 1,
+                  borderStyle: "solid",
+                  borderColor: "black",
+                  padding: 2,
+                  paddingX: 4,
+                  rounded: "lg",
+                  width: "full",
+                  backgroundColor: "white",
+                })}
+
+              />
+            </div>
+            */}
+          </div>
         </div>
         {/* Quick Select Buttons */}
-        <button
-          onClick={() => handleDateRangeSelect("thisYear")}
-          className={css({
-            bg: "gray-200",
-            p: 1,
-            rounded: "md",
-            border: "1px solid gray",
-          })}
-        >
-          This Year
-        </button>
-        <button
-          onClick={() => handleDateRangeSelect("lastYear")}
-          className={css({
-            bg: "gray-200",
-            p: 1,
-            rounded: "md",
-            border: "1px solid gray",
-          })}
-        >
-          Last Year
-        </button>
-        <button
-          onClick={() => handleDateRangeSelect("last3Months")}
-          className={css({
-            bg: "gray-200",
-            p: 1,
-            rounded: "md",
-            border: "1px solid gray",
-          })}
-        >
-          Last 3 Months
-        </button>
-        <button
-          onClick={() => handleDateRangeSelect("last6Months")}
-          className={css({
-            bg: "gray-200",
-            p: 1,
-            rounded: "md",
-            border: "1px solid gray",
-          })}
-        >
-          Last 6 Months
-        </button>
+        <div>
+
+
+          {/*
+          <button
+            onClick={() => handleDateRangeSelect("thisYear")}
+            className={css({
+              bg: "gray-200",
+              p: 1,
+              rounded: "md",
+              border: "1px solid gray",
+            })}
+          >
+            This Year
+          </button>
+          <button
+            onClick={() => handleDateRangeSelect("lastYear")}
+            className={css({
+              bg: "gray-200",
+              p: 1,
+              rounded: "md",
+              border: "1px solid gray",
+            })}
+          >
+            Last Year
+          </button>
+          <button
+            onClick={() => handleDateRangeSelect("last3Months")}
+            className={css({
+              bg: "gray-200",
+              p: 1,
+              rounded: "md",
+              border: "1px solid gray",
+            })}
+          >
+            Last 3 Months
+          </button>
+          <button
+            onClick={() => handleDateRangeSelect("last6Months")}
+            className={css({
+              bg: "gray-200",
+              p: 1,
+              rounded: "md",
+              border: "1px solid gray",
+            })}
+          >
+            Last 6 Months
+          </button>
+          */}
+
+        </div>
       </div>
 
       {/* Use Suspense and Await for the data */}
@@ -315,6 +367,7 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
             <>
               <div className={hstack()}>
                 <Indicator
+                  id="net-emissions"
                   label="Net Emissions"
                   value={
                     monthYear === "month"
@@ -329,6 +382,7 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
                   unit="tCO₂e"
                 />
                 <Indicator
+                  id="gross-emissions"
                   label="Gross Emissions"
                   value={
                     monthYear === "month"
@@ -343,6 +397,7 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
                   unit="tCO₂e"
                 />
                 <Indicator
+                  id="total-offset"
                   label="Total Offset"
                   value={resolvedData.yearly.latestOffsetTonnes}
                   previous={resolvedData.yearly.previousOffsetTonnes}

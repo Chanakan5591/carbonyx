@@ -39,7 +39,7 @@ export async function loader(args: Route.LoaderArgs) {
       unit: factors.unit,
       type: factors.type,
       subType: factors.subType,
-      factor: factors.factor, // Include the factor value
+      factor: factors.factor,
     })
     .from(factors)
     .where(eq(factors.type, "waste"));
@@ -79,47 +79,52 @@ export async function loader(args: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
+  let result;
 
   if (intent === "add") {
     const factorId = Number(formData.get("factorId"));
     const value = Number(formData.get("value"));
     const orgId = formData.get("orgId")?.toString() || "1";
     const factorValue = Number(formData.get("factorValue"));
-
-    // Add data to the database with recordedFactor
-    await db.insert(collectedData).values({
-      factorId,
-      value,
-      orgId,
-      recordedFactor: factorValue, // Store the actual factor used
-    });
+    result = await db
+      .insert(collectedData)
+      .values({
+        factorId,
+        value,
+        orgId,
+        recordedFactor: factorValue,
+      })
+      .returning();
   } else if (intent === "edit") {
     const id = formData.get("id")?.toString();
     const factorId = Number(formData.get("factorId"));
     const value = Number(formData.get("value"));
-
     if (!id) throw new Error("Missing ID for editing data");
-
-    // Update data in the database (recordedFactor is not updated here)
-    await db
+    result = await db
       .update(collectedData)
       .set({
         factorId,
         value,
       })
-      .where(eq(collectedData.id, id));
+      .where(eq(collectedData.id, id))
+      .returning();
   } else if (intent === "delete") {
     const id = formData.get("id")?.toString();
-
     if (!id) throw new Error("Missing ID for deleting data");
-
-    // Delete data from the database
-    await db.delete(collectedData).where(eq(collectedData.id, id));
+    result = await db
+      .delete(collectedData)
+      .where(eq(collectedData.id, id))
+      .returning();
   } else {
     return { success: false, message: "Invalid intent" };
   }
 
-  return { success: true, message: "Data updated successfully" };
+  return {
+    success: true,
+    message: "Data updated successfully",
+    updatedRecord: result?.[0],
+    intent,
+  };
 }
 
 export default function WasteInputPage() {
@@ -129,28 +134,78 @@ export default function WasteInputPage() {
   const submit = useSubmit();
 
   const [data, setData] = useState(formattedData);
-  const [editingData, setEditingData] =
-    useState<DataInputProps["editingData"]>(null);
+  const [editingData, setEditingData] = useState<DataInputProps["editingData"]>(null);
 
   useEffect(() => {
     if (navigation.state === "idle" && actionData?.success) {
-      // Refresh data after successful action
-      setData((d) => {
-        return d.map((item) => {
+      if (actionData.intent === "add" && actionData.updatedRecord) {
+        setData((prev) => {
+          if (prev.find((item) => item.id === actionData.updatedRecord.id)) {
+            return prev;
+          }
           const factor =
-            availableFactors.find((f) => f.id === item.factorId)?.factor || 0;
-
-          return {
-            ...item,
+            availableFactors.find(
+              (f) => f.id === actionData.updatedRecord.factorId,
+            )?.factor || 0;
+          const newRecord = {
+            ...actionData.updatedRecord,
+            type:
+              availableFactors.find(
+                (f) => f.id === actionData.updatedRecord.factorId,
+              )?.name || "",
             recordedFactor: factor,
             totalEmission:
-              Math.round((item.value * factor + Number.EPSILON) * 100) / 100,
+              Math.round(
+                (actionData.updatedRecord.value * factor + Number.EPSILON) * 100,
+              ) / 100,
           };
+          return [...prev, newRecord];
         });
-      });
-      setEditingData(null); // Exit editing mode
+      } else if (actionData.intent === "edit" && actionData.updatedRecord) {
+        setData((prev) =>
+          prev.map((item) => {
+            if (item.id === actionData.updatedRecord.id) {
+              const factor =
+                availableFactors.find(
+                  (f) => f.id === actionData.updatedRecord.factorId,
+                )?.factor || 0;
+              return {
+                ...actionData.updatedRecord,
+                type:
+                  availableFactors.find(
+                    (f) => f.id === actionData.updatedRecord.factorId,
+                  )?.name || "",
+                recordedFactor: factor,
+                totalEmission:
+                  Math.round(
+                    (actionData.updatedRecord.value * factor + Number.EPSILON) * 100,
+                  ) / 100,
+              };
+            }
+            return item;
+          }),
+        );
+      } else if (actionData.intent === "delete" && actionData.updatedRecord) {
+        setData((prev) =>
+          prev.filter((item) => item.id !== actionData.updatedRecord.id),
+        );
+      } else {
+        setData((prev) =>
+          prev.map((item) => {
+            const factor =
+              availableFactors.find((f) => f.id === item.factorId)?.factor || 0;
+            return {
+              ...item,
+              recordedFactor: factor,
+              totalEmission:
+                Math.round((item.value * factor + Number.EPSILON) * 100) / 100,
+            };
+          }),
+        );
+      }
+      setEditingData(null);
     }
-  }, [navigation, actionData, availableFactors]);
+  }, [navigation.state, actionData, availableFactors]);
 
   const columns = [
     { key: "timestamp", title: "Timestamp", type: "timestamp" },
@@ -196,10 +251,7 @@ export default function WasteInputPage() {
 
   const handleDataEdit = async (
     id: string,
-    updatedData: {
-      factorId: number;
-      value: number;
-    },
+    updatedData: { factorId: number; value: number },
   ) => {
     const formData = new FormData();
     formData.append("intent", "edit");
@@ -235,6 +287,7 @@ export default function WasteInputPage() {
         Acme, Inc. Waste Released
       </span>
       <DataInput
+        inputType="factor"
         availableFactors={availableFactors}
         onSubmit={handleDataSubmit}
         onEdit={handleDataEdit}
@@ -250,3 +303,4 @@ export default function WasteInputPage() {
     </div>
   );
 }
+

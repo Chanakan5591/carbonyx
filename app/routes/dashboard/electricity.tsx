@@ -18,13 +18,13 @@ import {
 } from "~/db/schema";
 import type { Route } from "./+types/electricity";
 import { getAuth } from "@clerk/react-router/ssr.server";
+import { toast } from "sonner";
 
 const factorType = "electricity"; // Set the factor type here
 
 export async function loader(args: Route.LoaderArgs) {
   const auth = await getAuth(args);
   const orgId = auth.orgId!;
-
   // Fetch initial data
   const electricity_usage = await db
     .select()
@@ -32,10 +32,9 @@ export async function loader(args: Route.LoaderArgs) {
     .where(
       and(
         eq(collectedData.orgId, orgId),
-        eq(collectedData.factorId, 36), // You might need a better way to filter initial data
-      ),
+        eq(collectedData.factorId, 36) // You might need a better way to filter initial data
+      )
     );
-
   // Fetch available factors with 'factor' value
   const availableFactors = await db
     .select({
@@ -47,7 +46,6 @@ export async function loader(args: Route.LoaderArgs) {
       factor: factors.factor, // Include the factor value
     })
     .from(factors);
-
   // Calculate total emission using the fetched factor
   const electricity_usage_with_emission: CollectedDataWithEmission[] =
     electricity_usage.map((data) => {
@@ -60,13 +58,13 @@ export async function loader(args: Route.LoaderArgs) {
           Math.round((data.value * factor + Number.EPSILON) * 100) / 100,
       };
     });
-
   return { electricity_usage_with_emission, availableFactors };
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
+  let result;
 
   if (intent === "add") {
     const factorId = Number(formData.get("factorId"));
@@ -74,40 +72,51 @@ export async function action({ request }: Route.ActionArgs) {
     const orgId = formData.get("orgId")?.toString() || "1";
     const factorValue = Number(formData.get("factorValue"));
 
-    // Add data to the database (no need for recordedFactor)
-    await db.insert(collectedData).values({
-      factorId,
-      value,
-      orgId,
-      recordedFactor: factorValue,
-    });
+    // Add data to the database
+    result = await db
+      .insert(collectedData)
+      .values({
+        factorId,
+        value,
+        orgId,
+        recordedFactor: factorValue,
+      })
+      .returning();
   } else if (intent === "edit") {
     const id = formData.get("id")?.toString();
     const factorId = Number(formData.get("factorId"));
     const value = Number(formData.get("value"));
-
     if (!id) throw new Error("Missing ID for editing data");
 
     // Update data in the database
-    await db
+    result = await db
       .update(collectedData)
       .set({
         factorId,
         value,
       })
-      .where(eq(collectedData.id, id));
+      .where(eq(collectedData.id, id))
+      .returning();
   } else if (intent === "delete") {
     const id = formData.get("id")?.toString();
-
     if (!id) throw new Error("Missing ID for deleting data");
 
     // Delete data from the database
-    await db.delete(collectedData).where(eq(collectedData.id, id));
+    result = await db
+      .delete(collectedData)
+      .where(eq(collectedData.id, id))
+      .returning();
   } else {
     return { success: false, message: "Invalid intent" };
   }
 
-  return { success: true, message: "Data updated successfully" };
+  // Return the updated record and all current records
+  return {
+    success: true,
+    message: "Data updated successfully",
+    updatedRecord: result?.[0],
+    intent: intent,
+  };
 }
 
 export default function ElectricityInputPage() {
@@ -117,29 +126,73 @@ export default function ElectricityInputPage() {
   const navigation = useNavigation();
   const submit = useSubmit();
 
-  const [data, setData] = useState(electricity_usage_with_emission);
+  // Use state to track the table data, initialized from the loader
+  const [tableData, setTableData] = useState<CollectedDataWithEmission[]>(
+    electricity_usage_with_emission
+  );
+
   const [editingData, setEditingData] =
     useState<DataInputProps["editingData"]>(null);
 
+  // Update the state when loader data changes (initial load)
+  useEffect(() => {
+    setTableData(electricity_usage_with_emission);
+  }, [electricity_usage_with_emission]);
+
+  // Update the table data immediately after action and show a toast
   useEffect(() => {
     if (navigation.state === "idle" && actionData?.success) {
-      // Refresh data after successful action
-      setData((d) => {
-        return d.map((item) => {
+      toast.success(actionData.message || "Data updated successfully");
+      if (actionData.intent === "add" && actionData.updatedRecord) {
+        setTableData((prev) => {
+          // Prevent duplicate addition if record already exists
+          if (prev.find((item) => item.id === actionData.updatedRecord.id)) {
+            return prev;
+          }
           const factor =
-            availableFactors.find((f) => f.id === item.factorId)?.factor || 0;
-
-          return {
-            ...item,
+            availableFactors.find(
+              (f) => f.id === actionData.updatedRecord.factorId
+            )?.factor || 0;
+          const newRecord = {
+            ...actionData.updatedRecord,
             recordedFactor: factor,
             totalEmission:
-              Math.round((item.value * factor + Number.EPSILON) * 100) / 100,
+              Math.round(
+                (actionData.updatedRecord.value * factor + Number.EPSILON) * 100
+              ) / 100,
           };
+          return [...prev, newRecord];
         });
-      });
+      } else if (actionData.intent === "edit" && actionData.updatedRecord) {
+        setTableData((prev) =>
+          prev.map((item) => {
+            if (item.id === actionData.updatedRecord.id) {
+              const factor =
+                availableFactors.find(
+                  (f) => f.id === actionData.updatedRecord.factorId
+                )?.factor || 0;
+              return {
+                ...actionData.updatedRecord,
+                recordedFactor: factor,
+                totalEmission:
+                  Math.round(
+                    (actionData.updatedRecord.value * factor + Number.EPSILON) *
+                    100
+                  ) / 100,
+              };
+            }
+            return item;
+          })
+        );
+      } else if (actionData.intent === "delete" && actionData.updatedRecord) {
+        setTableData((prev) =>
+          prev.filter((item) => item.id !== actionData.updatedRecord.id)
+        );
+      }
+
       setEditingData(null); // Exit editing mode
     }
-  }, [navigation, actionData]);
+  }, [navigation.state, actionData, availableFactors]);
 
   const columns = [
     { key: "timestamp", title: "Timestamp", type: "timestamp" },
@@ -160,14 +213,17 @@ export default function ElectricityInputPage() {
 
   const handleDataSubmit = async (newData: {
     factorId: number;
-    value: number;
+    value: number | "";
     orgId: string;
     factorValue: number;
   }) => {
     const formData = new FormData();
     formData.append("intent", "add");
     formData.append("factorId", newData.factorId.toString());
-    formData.append("value", newData.value.toString());
+    formData.append(
+      "value",
+      newData.value === "" ? "0" : newData.value.toString()
+    );
     formData.append("orgId", newData.orgId.toString());
     formData.append("factorValue", newData.factorValue.toString());
     submit(formData, { method: "post" });
@@ -186,14 +242,17 @@ export default function ElectricityInputPage() {
     id: string,
     updatedData: {
       factorId: number;
-      value: number;
-    },
+      value: number | "";
+    }
   ) => {
     const formData = new FormData();
     formData.append("intent", "edit");
     formData.append("id", id);
     formData.append("factorId", updatedData.factorId.toString());
-    formData.append("value", updatedData.value.toString());
+    formData.append(
+      "value",
+      updatedData.value === "" ? "0" : updatedData.value.toString()
+    );
     submit(formData, { method: "post" });
   };
 
@@ -223,18 +282,21 @@ export default function ElectricityInputPage() {
         Acme, Inc. Electricity Consumption
       </span>
       <DataInput
+        inputType="factor"
         availableFactors={availableFactors}
         onSubmit={handleDataSubmit}
         onEdit={handleDataEdit}
         editingData={editingData}
         factorType={factorType}
+        allowEmptyValues={true} // Add this prop to DataInput component
       />
       <Table
         columns={columns}
-        data={data}
-        onEditStart={handleEditStart} // Pass onEditStart to Table
-        onDelete={handleDelete} // Pass onDelete to Table
+        data={tableData}
+        onEditStart={handleEditStart}
+        onDelete={handleDelete}
       />
     </div>
   );
 }
+

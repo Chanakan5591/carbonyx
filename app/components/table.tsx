@@ -1,16 +1,15 @@
 import { css } from "carbonyxation/css";
 import { flex } from "carbonyxation/patterns";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface Column {
   key: string;
   title: string;
   type: string;
-  prefix?: string; // Optional prefix
-  suffix?: string; // Optional suffix
+  prefix?: string;
+  suffix?: string;
 }
 
-// Type definition for a row of data
 interface RowData {
   [key: string]: string | number | boolean | undefined | null;
 }
@@ -81,6 +80,18 @@ const TableHeader = ({ columns, onSort }: HeaderProps) => {
             </div>
           </th>
         ))}
+        {/* Actions header */}
+        <th
+          className={css({
+            py: 2,
+            px: 4,
+            textAlign: "center",
+            color: "neutral.400",
+            fontWeight: "medium",
+          })}
+        >
+          Actions
+        </th>
       </tr>
     </thead>
   );
@@ -100,9 +111,9 @@ interface RowProps {
 
 const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
   const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
+    const date = new Date(timestamp * 1000);
     const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month is 0-indexed
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     return `${day}.${month}.${year}`;
   };
@@ -124,7 +135,6 @@ const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
     <tr>
       {columns.map((column) => {
         const cellValue = rowData[column.key];
-
         return (
           <td
             key={`${cellValue}-${column.key}`}
@@ -133,6 +143,7 @@ const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
               py: 4,
               borderBottom: "1px solid",
               borderBottomColor: "neutral.100",
+              verticalAlign: "middle",
             })}
           >
             {column.prefix && <span>{column.prefix}</span>}
@@ -150,15 +161,29 @@ const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
           </td>
         );
       })}
-      {/* Edit and Delete Buttons */}
-      <td className={flex({ gap: 2 })}>
+      <td
+        className={css({
+          px: 4,
+          py: 4,
+          borderBottom: "1px solid",
+          borderBottomColor: "neutral.100",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+        })}
+      >
         <button
           onClick={handleEditClick}
           className={css({
             bg: "yellow.400",
             color: "black",
-            p: 2,
+            py: 2,
+            px: 4,
             borderRadius: "md",
+            border: "none",
+            cursor: "pointer",
+            transition: "background-color 0.2s ease-in-out",
             "&:hover": { bg: "yellow.500" },
           })}
         >
@@ -169,8 +194,12 @@ const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
           className={css({
             bg: "red.400",
             color: "white",
-            p: 2,
+            py: 2,
+            px: 4,
             borderRadius: "md",
+            border: "none",
+            cursor: "pointer",
+            transition: "background-color 0.2s ease-in-out",
             "&:hover": { bg: "red.500" },
           })}
         >
@@ -198,11 +227,11 @@ const TableBody = ({ data, columns, onEditStart, onDelete }: BodyProps) => {
     <tbody>
       {data.map((rowData, index) => (
         <TableRow
-          onEditStart={onEditStart}
-          onDelete={onDelete}
           key={index}
           rowData={rowData}
           columns={columns}
+          onEditStart={onEditStart}
+          onDelete={onDelete}
         />
       ))}
     </tbody>
@@ -222,7 +251,13 @@ interface TableProps {
 }
 
 const Table = ({ columns, data, onEditStart, onDelete }: TableProps) => {
+  // Local state for sorting and displaying the table data
   const [tableData, setTableData] = useState(data);
+
+  // Synchronize local state with new prop values when data changes
+  useEffect(() => {
+    setTableData(data);
+  }, [data]);
 
   const handleSort = (columnKey: string, sortDirection: SortDirection) => {
     if (!columnKey || !sortDirection) {
@@ -240,10 +275,8 @@ const Table = ({ columns, data, onEditStart, onDelete }: TableProps) => {
       if (aValue === null || aValue === undefined) return 1;
       if (bValue === null || bValue === undefined) return -1;
 
-      // Sort based on column type
       switch (columnType) {
         case "timestamp":
-          // Now comparing numbers (Unix timestamps) directly
           return sortDirection === "asc"
             ? Number(aValue) - Number(bValue)
             : Number(bValue) - Number(aValue);
@@ -282,10 +315,10 @@ const Table = ({ columns, data, onEditStart, onDelete }: TableProps) => {
       >
         <TableHeader columns={columns} onSort={handleSort} />
         <TableBody
-          onEditStart={onEditStart}
-          onDelete={onDelete}
           data={tableData}
           columns={columns}
+          onEditStart={onEditStart}
+          onDelete={onDelete}
         />
       </table>
     </div>
@@ -293,3 +326,4 @@ const Table = ({ columns, data, onEditStart, onDelete }: TableProps) => {
 };
 
 export default Table;
+

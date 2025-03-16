@@ -9,9 +9,12 @@ import {
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
+import 'react-grid-layout/css/styles.css'
+import 'react-resizable/css/styles.css'
 
 import { rootAuthLoader } from "@clerk/react-router/ssr.server";
 import { ClerkProvider } from "@clerk/react-router";
+import { Toaster } from 'sonner'
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.bunny.net" },
@@ -55,6 +58,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
       signUpFallbackRedirectUrl="/"
       signInFallbackRedirectUrl="/"
     >
+      <Toaster />
       <Outlet />
     </ClerkProvider>
   );

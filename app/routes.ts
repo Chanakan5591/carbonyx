@@ -14,6 +14,7 @@ export default [
   ...prefix("/dashboard", [
     layout("routes/dashboard/layout.tsx", [
       route("/", "routes/dashboard/dashboard.tsx"),
+      route("/assets", "routes/dashboard/assets.tsx"),
       route("/info", "routes/dashboard/information.tsx"),
       route("/electricity", "routes/dashboard/electricity.tsx"),
       route("/stationary_fuels", "routes/dashboard/stationary_fuel.tsx"),

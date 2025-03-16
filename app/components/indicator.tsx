@@ -1,6 +1,5 @@
 import { css } from "carbonyxation/css";
 import { hstack, vstack } from "carbonyxation/patterns";
-import { formatNumber } from "~/utils/utilities";
 
 interface Props {
   label: string;
@@ -19,7 +18,7 @@ export default function Indicator({
 }: Props) {
   return (
     <div
-      className={vstack({
+      className={hstack({
         bg: "white",
         border: "1px solid",
         minW: 40,
@@ -73,7 +72,7 @@ export default function Indicator({
                   fontSize: 12,
                   color:
                     (value > previous && valueTrend === "negative") ||
-                    (value < previous && valueTrend === "positive")
+                      (value < previous && valueTrend === "positive")
                       ? "red"
                       : "green",
                 })}

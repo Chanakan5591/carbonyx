@@ -41,6 +41,35 @@ export const collectedData = sqliteTable(
   ],
 );
 
+export const assets = sqliteTable("assets", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  factor_id: integer("factor_id")
+    .notNull()
+    .references(() => factors.id),
+  unit: text("unit").notNull(),
+  conversion_rate: real("conversion_rate").notNull()
+});
+
+export const assetsData = sqliteTable(
+  "assets_data",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    orgId: text("org_id").notNull(),
+    asset_id: text("asset_id")
+      .notNull()
+      .references(() => assets.id),
+  },
+  (table) => [
+    index("asset_data_org_id_idx").on(table.orgId),
+    index("asset_data_asset_id_idx").on(table.asset_id),
+  ],
+);
+
 export const offsetData = sqliteTable(
   "offset_data",
   {
