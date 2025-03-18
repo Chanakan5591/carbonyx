@@ -2871,7 +2871,7 @@ __metadata:
     drizzle-kit: "npm:^0.30.2"
     drizzle-orm: "npm:^0.38.4"
     isbot: "npm:^5.1.17"
-    lucide-react: "npm:^0.474.0"
+    lucide-react: "npm:^0.476.0"
     motion: "npm:^12.5.0"
     postcss: "npm:^8.5.1"
     react: "npm:^19.0.0"
@@ -5021,12 +5021,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.474.0":
-  version: 0.474.0
-  resolution: "lucide-react@npm:0.474.0"
+"lucide-react@npm:^0.476.0":
+  version: 0.476.0
+  resolution: "lucide-react@npm:0.476.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/60c88c251b2ed4d1074d24a7041122dc280c48cf68a1a25b23e35a296f49955e0edc22744f278929bc7e48dcd4248bed27d6a8227d5a42fc49fceb134194b310
+  checksum: 10c0/85d26dbfaf02ef8e4140545c1da09d8df2b78cde45457c8a4ae0898e523e753063c9cc6c05a184575edda981f8b1ff0f77e43dcafbfc189079212844262380e3
   languageName: node
   linkType: hard
 
