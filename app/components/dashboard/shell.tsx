@@ -4,10 +4,13 @@ import { Outlet, Link } from "react-router";
 import SmallLogo from "~/assets/logo_64x.png";
 import { MenuItem, MenuSection } from "../menuitem";
 import { OrganizationSwitcher, UserButton } from "@clerk/react-router";
+import { Menu, X } from 'lucide-react'
+import { useState } from "react";
 
 export default function Shell() {
   // Calculate the header height (assuming padding: "4" is 16px on each side, total 32px + assumed content height of 24px)
   const headerHeight = "65px"; // **Adjust this value to your actual header height**
+  const [displayMenu, setDisplayMenu] = useState(false)
 
   return (
     <div
@@ -22,6 +25,7 @@ export default function Shell() {
           bg: "white",
           borderBottom: "1px solid",
           justifyContent: "space-between",
+
         })}
       >
         <Link to="/dashboard">
@@ -33,6 +37,22 @@ export default function Shell() {
               gap: 2,
             })}
           >
+            {!displayMenu ? (
+              <Menu className={css({
+                display: "unset",
+                md: {
+                  display: "none"
+                }
+              })} onClick={() => setDisplayMenu(!displayMenu)} />
+            ) : (
+              <X className={css({
+                display: "unset",
+                md: {
+                  display: "none"
+                }
+              })} onClick={() => setDisplayMenu(!displayMenu)} />
+
+            )}
             <img src={SmallLogo} alt="Carbonyx" width={32} />
             Carbonyx
             <OrganizationSwitcher hidePersonal={true} />
@@ -45,12 +65,19 @@ export default function Shell() {
           w: "full",
           // Calculate the remaining height after subtracting the header
           height: `calc(100vh - ${headerHeight})`,
+
         })}
       >
         <div
-          className={flex({
+          className={css({
+            display: `${displayMenu ? "flex" : "none"}`,
+            width: "full",
+            md: {
+              display: "flex",
+              minW: "56",
+              width: "unset"
+            },
             flexDirection: "column",
-            minW: "56",
             height: "full",
             bg: "white",
             borderRight: "1px solid",
