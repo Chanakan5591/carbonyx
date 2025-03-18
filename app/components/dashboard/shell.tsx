@@ -40,14 +40,14 @@ export default function Shell() {
             {!displayMenu ? (
               <Menu className={css({
                 display: "unset",
-                md: {
+                sm: {
                   display: "none"
                 }
               })} onClick={() => setDisplayMenu(!displayMenu)} />
             ) : (
               <X className={css({
                 display: "unset",
-                md: {
+                sm: {
                   display: "none"
                 }
               })} onClick={() => setDisplayMenu(!displayMenu)} />
@@ -72,7 +72,7 @@ export default function Shell() {
           className={css({
             display: `${displayMenu ? "flex" : "none"}`,
             width: "full",
-            md: {
+            sm: {
               display: "flex",
               minW: "56",
               width: "unset"
