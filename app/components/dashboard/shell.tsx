@@ -5,7 +5,11 @@ import SmallLogo from "~/assets/logo_64x.png";
 import { MenuItem, MenuSection } from "../menuitem";
 import { OrganizationSwitcher, UserButton } from "@clerk/react-router";
 import { Menu, X } from 'lucide-react'
-import { useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+
+const BubbleChat = lazy(() => import("flowise-embed-react").then((module) => ({
+  default: module.BubbleChat
+})))
 
 export default function Shell() {
   // Calculate the header height (assuming padding: "4" is 16px on each side, total 32px + assumed content height of 24px)
@@ -127,6 +131,12 @@ export default function Shell() {
         >
           <Outlet />
         </div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <BubbleChat
+            chatflowid="5e469ce2-a75f-4fe5-b9c3-1196e5d8ff62"
+            apiHost="https://flowise.chanakancloud.net"
+          />
+        </Suspense>
       </div>
     </div>
   );
