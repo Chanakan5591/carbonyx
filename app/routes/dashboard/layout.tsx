@@ -3,7 +3,7 @@ import Shell from "~/components/dashboard/shell";
 import type { Route } from "./+types/layout";
 import { redirect, useNavigate } from 'react-router'
 import { getAuth } from '@clerk/react-router/ssr.server'
-import { useOrganizationList } from "@clerk/react-router";
+import { useOrganizationList, useOrganization } from "@clerk/react-router";
 import { useEffect } from "react";
 
 export async function loader(args: Route.LoaderArgs) {
@@ -18,22 +18,23 @@ export async function loader(args: Route.LoaderArgs) {
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const orgList = useOrganizationList({ userMemberships: true });
+  const currentOrg = useOrganization()
 
   useEffect(() => {
     if (!orgList.isLoaded || orgList.userMemberships.isFetching) return
-
-    console.log(orgList.userMemberships.count)
 
     if (!orgList.setActive || orgList.userMemberships.count === 0) {
       navigate("/onboarding");
       return;
     }
 
-    orgList.setActive({
-      organization: orgList.userMemberships.data[0].organization,
-    });
+    if (currentOrg.isLoaded && !currentOrg.organization) {
+      orgList.setActive({
+        organization: orgList.userMemberships.data[0].organization,
+      });
+    }
 
-  }, [orgList.isLoaded, orgList.userMemberships.isFetching]);
+  }, [orgList.isLoaded, orgList.userMemberships.isFetching, currentOrg.organization]);
 
   return (
     <>
