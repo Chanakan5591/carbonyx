@@ -1,9 +1,9 @@
 import { css } from "carbonyxation/css";
 import { flex, hstack } from "carbonyxation/patterns";
-import { Outlet, Link } from "react-router";
+import { Outlet, Link, useRevalidator } from "react-router";
 import SmallLogo from "~/assets/logo_64x.png";
 import { MenuItem, MenuSection } from "../menuitem";
-import { OrganizationSwitcher, UserButton } from "@clerk/react-router";
+import { OrganizationSwitcher, UserButton, useAuth } from "@clerk/react-router";
 import { Menu, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from "react";
 
@@ -15,6 +15,19 @@ export default function Shell() {
   // Calculate the header height (assuming padding: "4" is 16px on each side, total 32px + assumed content height of 24px)
   const headerHeight = "65px"; // **Adjust this value to your actual header height**
   const [displayMenu, setDisplayMenu] = useState(false)
+  const auth = useAuth()
+  const [currentOrgId, setCurrentOrgId] = useState("")
+  const { revalidate } = useRevalidator()
+
+  useEffect(() => {
+    if (!auth.isLoaded || !auth.isSignedIn) return
+
+    if (auth.orgId !== currentOrgId && auth.orgId) {
+      setCurrentOrgId(auth.orgId)
+      revalidate()
+
+    }
+  }, [auth.orgId, auth.isLoaded, auth.isSignedIn])
 
   return (
     <div

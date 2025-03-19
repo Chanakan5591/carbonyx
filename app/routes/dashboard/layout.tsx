@@ -1,9 +1,9 @@
 import { Outlet } from "react-router";
 import Shell from "~/components/dashboard/shell";
 import type { Route } from "./+types/layout";
-import { redirect, useNavigate } from 'react-router'
+import { redirect, useNavigate, useRevalidator } from 'react-router'
 import { getAuth } from '@clerk/react-router/ssr.server'
-import { useOrganizationList, useOrganization } from "@clerk/react-router";
+import { useOrganizationList, useAuth } from "@clerk/react-router";
 import { useEffect } from "react";
 
 export async function loader(args: Route.LoaderArgs) {
@@ -18,7 +18,9 @@ export async function loader(args: Route.LoaderArgs) {
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const orgList = useOrganizationList({ userMemberships: true });
-  const currentOrg = useOrganization()
+  const auth = useAuth()
+
+  const revalidator = useRevalidator()
 
   useEffect(() => {
     if (!orgList.isLoaded || orgList.userMemberships.isFetching) return
@@ -28,13 +30,15 @@ export default function DashboardLayout() {
       return;
     }
 
-    if (currentOrg.isLoaded && !currentOrg.organization) {
+    if (auth.isLoaded && !auth.orgId) {
       orgList.setActive({
         organization: orgList.userMemberships.data[0].organization,
       });
+
+      revalidator.revalidate()
     }
 
-  }, [orgList.isLoaded, orgList.userMemberships.isFetching, currentOrg.organization]);
+  }, [orgList.isLoaded, orgList.userMemberships.isFetching, auth.isLoaded, auth.orgId]);
 
   return (
     <>
