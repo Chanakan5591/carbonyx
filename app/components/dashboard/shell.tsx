@@ -148,6 +148,49 @@ export default function Shell() {
           <BubbleChat
             chatflowid="5e469ce2-a75f-4fe5-b9c3-1196e5d8ff62"
             apiHost="https://flowise.chanakancloud.net"
+            theme={{
+              button: {
+                backgroundColor: '#496a57',
+                right: 20,
+                bottom: 20,
+                size: 48,
+                dragAndDrop: true,
+                iconColor: 'white',
+              },
+              chatWindow: {
+                showTitle: true,
+                showAgentMessages: true,
+                title: "ถามปลื้ม",
+                titleTextColor: "#ffffff",
+                welcomeMessage: "สวัสดีครับ ผมชื่อปลื้ม ถามคำถามเกี่ยวกับคาร์บอนกับผมได้เลยนะ",
+                textInput: {
+                  placeholder: 'สงสัยอะไรหรอ',
+                  backgroundColor: '#ffffff',
+                  textColor: '#303235',
+                  sendButtonColor: '#3B81F6',
+                  autoFocus: true,
+                },
+                botMessage: {
+                  backgroundColor: '#f7f5ef',
+                  textColor: '#303235',
+                  showAvatar: true,
+                  avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+                },
+                userMessage: {
+                  backgroundColor: '#496a57',
+                  textColor: '#ffffff',
+                  showAvatar: true,
+                  avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+                },
+
+                footer: {
+                  textColor: '#303235',
+                  text: 'Made with ❤️ by',
+                  company: 'Carbonyx',
+                  companyLink: 'https://carbonyx.chanakancloud.net/'
+                }
+              },
+            }}
           />
         </Suspense>
       </div>
