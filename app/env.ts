@@ -6,6 +6,9 @@ export const env = createEnv({
     TURSO_DATABASE_URL: z.string().url().startsWith("libsql://"),
     TURSO_AUTH_TOKEN: z.string(),
     CLERK_SECRET_KEY: z.string(),
+    FLOWISE_CHATFLOW: z.string(),
+    FLOWISE_API_HOST: z.string(),
+    FLOWISE_API_KEY: z.string()
   },
   clientPrefix: "VITE_",
   client: {},
