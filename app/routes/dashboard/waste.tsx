@@ -284,7 +284,7 @@ export default function WasteInputPage() {
           fontWeight: "bold",
         })}
       >
-        Acme, Inc. Waste Released
+        Waste Released
       </span>
       <DataInput
         inputType="factor"

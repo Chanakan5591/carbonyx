@@ -286,7 +286,7 @@ export default function TransportationInputPage() {
           fontWeight: "bold",
         })}
       >
-        Acme, Inc. Transportation Consumption
+        Transportation Consumption
       </span>
       <DataInput
         inputType="factor"

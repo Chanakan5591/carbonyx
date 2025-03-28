@@ -279,7 +279,7 @@ export default function ElectricityInputPage() {
           fontWeight: "bold",
         })}
       >
-        Acme, Inc. Electricity Consumption
+        Electricity Consumption
       </span>
       <DataInput
         inputType="factor"

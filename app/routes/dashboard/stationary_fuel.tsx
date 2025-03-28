@@ -303,7 +303,7 @@ export default function StationaryCombustionInputPage() {
           fontWeight: "bold",
         })}
       >
-        Acme, Inc. Stationary Combustion Consumption
+        Stationary Combustion Consumption
       </span>
       <DataInput
         inputType="factor"
