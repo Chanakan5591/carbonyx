@@ -6,8 +6,8 @@ interface Column {
   key: string;
   title: string;
   type: string;
-  prefix?: string;
-  suffix?: string;
+  prefix?: string | ((row: RowData) => string);
+  suffix?: string | ((row: RowData) => string);
 }
 
 interface RowData {
@@ -34,7 +34,6 @@ const TableHeader = ({ columns, onSort }: HeaderProps) => {
     } else if (sortConfig.key === key && sortConfig.direction === "desc") {
       direction = null;
     }
-
     setSortConfig({ key, direction });
     onSort(key, direction);
   };
@@ -100,12 +99,7 @@ const TableHeader = ({ columns, onSort }: HeaderProps) => {
 interface RowProps {
   rowData: RowData;
   columns: Column[];
-  onEditStart: (data: {
-    id: string;
-    factorId: number;
-    value: number;
-    recordedFactor: number;
-  }) => void;
+  onEditStart: (data: any) => void;
   onDelete: (id: string) => void;
 }
 
@@ -119,12 +113,8 @@ const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
   };
 
   const handleEditClick = () => {
-    onEditStart({
-      id: rowData.id as string,
-      factorId: rowData.factorId as number,
-      value: rowData.value as number,
-      recordedFactor: rowData.recordedFactor as number,
-    });
+    // Pass through the entire rowData object to let the parent component extract what it needs
+    onEditStart(rowData);
   };
 
   const handleDeleteClick = () => {
@@ -146,16 +136,26 @@ const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
               verticalAlign: "middle",
             })}
           >
-            {column.prefix && <span>{column.prefix}</span>}
+            {column.prefix && (
+              <span>
+                {typeof column.prefix === 'function'
+                  ? column.prefix(rowData)
+                  : column.prefix}
+              </span>
+            )}
+
             {column.type === "timestamp"
               ? formatDate(cellValue as number)
               : cellValue !== undefined && cellValue !== null
                 ? cellValue.toString()
                 : ""}
+
             {column.suffix && (
               <span className={css({ color: "neutral.500" })}>
                 {" "}
-                {column.suffix}
+                {typeof column.suffix === 'function'
+                  ? column.suffix(rowData)
+                  : column.suffix}
               </span>
             )}
           </td>
@@ -213,12 +213,7 @@ const TableRow = ({ rowData, columns, onEditStart, onDelete }: RowProps) => {
 interface BodyProps {
   data: RowData[];
   columns: Column[];
-  onEditStart: (data: {
-    id: string;
-    factorId: number;
-    value: number;
-    recordedFactor: number;
-  }) => void;
+  onEditStart: (data: any) => void;
   onDelete: (id: string) => void;
 }
 
@@ -241,12 +236,7 @@ const TableBody = ({ data, columns, onEditStart, onDelete }: BodyProps) => {
 interface TableProps {
   columns: Column[];
   data: RowData[];
-  onEditStart: (data: {
-    id: string;
-    factorId: number;
-    value: number;
-    recordedFactor: number;
-  }) => void;
+  onEditStart: (data: any) => void;
   onDelete: (id: string) => void;
 }
 
@@ -266,7 +256,6 @@ const Table = ({ columns, data, onEditStart, onDelete }: TableProps) => {
     }
 
     const columnType = columns.find((c) => c.key === columnKey)?.type;
-
     const sortedData = [...tableData].sort((a, b) => {
       const aValue = a[columnKey];
       const bValue = b[columnKey];
@@ -326,4 +315,3 @@ const Table = ({ columns, data, onEditStart, onDelete }: TableProps) => {
 };
 
 export default Table;
-

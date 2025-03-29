@@ -63,6 +63,11 @@ export const assetsData = sqliteTable(
     asset_id: text("asset_id")
       .notNull()
       .references(() => assets.id),
+    value: integer("value").notNull(),
+    recordedFactor: integer("recorded_factor").notNull(),
+    timestamp: integer("timestamp")
+      .notNull()
+      .$defaultFn(() => (Date.now() / 1000) | 0)
   },
   (table) => [
     index("asset_data_org_id_idx").on(table.orgId),

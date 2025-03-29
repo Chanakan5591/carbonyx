@@ -15,257 +15,207 @@ export interface FactorData {
 export interface AssetData {
   id: string;
   name: string;
-  factor_id: number;
+  factor: number; // Updated from kwh_per_asset to factor
   unit: string;
+  factor_unit?: string; // Added for the new schema
+  factor_name?: string; // Added for the new schema
   conversion_rate: number;
 }
 
 export interface DataInputProps {
-  availableFactors: FactorData[];
+  inputType: "factor" | "asset" | "both";
+  availableFactors?: FactorData[];
   availableAssets?: AssetData[];
-  onSubmit: (data: {
-    factorId: number;
-    value: number;
-    orgId: string;
-    factorValue: number;
-    isAssetInput?: boolean;
-    assetId?: string;
-    assetCount?: number;
-  }) => Promise<void>;
-  onEdit: (
-    id: string,
-    data: {
-      factorId: number;
-      value: number;
-      isAssetInput?: boolean;
-      assetId?: string;
-      assetCount?: number;
-    },
-  ) => Promise<void>;
+  factorType?: string;
+  allowEmptyValues?: boolean;
   editingData?: {
     id: string;
-    factorId: number;
-    value: number;
-    isAssetInput?: boolean;
+    factorId?: number;
+    value?: number;
     assetId?: string;
-    assetCount?: number;
+    asset_id?: string; // Support both naming conventions
+    recordedFactor?: number;
   } | null;
-  factorType: string;
-  allowEmptyValues?: boolean;
-  inputType: "factor" | "asset" | "both"; // Changed from inputMode to inputType
+  onSubmit: (data: any) => Promise<void>;
+  onEdit: (id: string, data: any) => Promise<void>;
 }
 
 const DataInput = ({
-  availableFactors,
+  inputType = "factor",
+  availableFactors = [],
   availableAssets = [],
+  factorType = "",
+  allowEmptyValues = false,
+  editingData = null,
   onSubmit,
   onEdit,
-  editingData = null,
-  factorType,
-  allowEmptyValues = false,
-  inputType = "both", // Changed from inputMode to inputType
 }: DataInputProps) => {
-  // Track whether we're in factor input or asset input mode
-  const [mode, setMode] = useState<"factor" | "asset">( // Changed from "direct" to "factor"
-    editingData?.isAssetInput
-      ? "asset"
-      : (inputType === "asset" ? "asset" : "factor")
+  // Determine which mode we're in based on inputType and available data
+  const [mode, setMode] = useState<"factor" | "asset">(
+    inputType === "asset" ? "asset" : "factor"
   );
 
   // Factor input state
-  const [factorId, setFactorId] = useState<number>(
-    editingData?.factorId || availableFactors[0]?.id || 0,
-  );
-  const [value, setValue] = useState<number>(editingData?.value || 0);
-  const [inputValue, setInputValue] = useState<string>(editingData?.value?.toString() || "0");
+  const [factorId, setFactorId] = useState<number>(0);
+  const [value, setValue] = useState<number | "">(0);
+  const [inputValue, setInputValue] = useState<string>("0");
 
   // Asset input state
-  const [selectedAssetId, setSelectedAssetId] = useState<string>(
-    editingData?.assetId || availableAssets[0]?.id || "",
-  );
-  const [assetCount, setAssetCount] = useState<number>(editingData?.assetCount || 0);
-  const [assetCountInput, setAssetCountInput] = useState<string>(
-    editingData?.assetCount?.toString() || "0"
-  );
+  const [assetId, setAssetId] = useState<string>("");
+  const [assetValue, setAssetValue] = useState<number | "">(0);
+  const [assetValueInput, setAssetValueInput] = useState<string>("0");
 
   const hasEditingDataChanged = useRef(false);
+  const auth = useAuth();
+  const orgId = auth.orgId || "1";
 
-  // Filter factors by type for factor input mode
-  const filteredFactors = availableFactors.filter(
-    (factor) => factor.type === factorType,
-  );
+  // Get filtered lists based on availability
+  const filteredFactors = factorType ?
+    availableFactors.filter(factor => factor.type === factorType) :
+    availableFactors;
 
-  // Filter assets by linked factor type
-  const filteredAssets = availableAssets.filter((asset) => {
-    const linkedFactor = availableFactors.find(f => f.id === asset.factor_id);
-    return linkedFactor && linkedFactor.type === factorType;
-  });
+  const hasFactors = filteredFactors.length > 0;
+  const hasAssets = availableAssets.length > 0;
 
-  // Get details of selected factor/asset
-  const selectedFactor = filteredFactors.find(factor => factor.id === factorId);
-  const selectedAsset = filteredAssets.find(asset => asset.id === selectedAssetId);
-
-  // For asset mode, determine the linked factor and conversion details
-  const assetLinkedFactorId = selectedAsset?.factor_id;
-  const assetLinkedFactor = assetLinkedFactorId
-    ? availableFactors.find(factor => factor.id === assetLinkedFactorId)
-    : undefined;
-  const assetConversionRate = selectedAsset?.conversion_rate || 1;
-
+  // Initialize with first available option or from editingData
   useEffect(() => {
-    // Only update the states if editingData changes for the first time
-    if (editingData && !hasEditingDataChanged.current) {
-      if (editingData.isAssetInput) {
-        setMode("asset");
-        setSelectedAssetId(editingData.assetId || "");
-        setAssetCount(editingData.assetCount || 0);
-        setAssetCountInput(editingData.assetCount?.toString() || "0");
-      } else {
-        setMode("factor");
-        setFactorId(editingData.factorId);
-        setValue(editingData.value);
-        setInputValue(editingData.value.toString());
-      }
-      hasEditingDataChanged.current = true; // Prevent further resetting
-    }
-  }, [editingData]);
-
-  useEffect(() => {
-    // Update factorId if the current factorId is not in the filteredFactors
-    if (
-      mode === "factor" &&
-      !filteredFactors.some((factor) => factor.id === factorId) &&
-      filteredFactors.length > 0
-    ) {
+    if (filteredFactors.length > 0 && factorId === 0) {
       setFactorId(filteredFactors[0].id);
     }
-    // Update selectedAssetId if not in filteredAssets
-    if (
-      mode === "asset" &&
-      !filteredAssets.some((asset) => asset.id === selectedAssetId) &&
-      filteredAssets.length > 0
-    ) {
-      setSelectedAssetId(filteredAssets[0].id);
+
+    if (availableAssets.length > 0 && assetId === "") {
+      setAssetId(availableAssets[0].id);
     }
-  }, [filteredFactors, filteredAssets, mode]);
+  }, [filteredFactors, availableAssets]);
 
-  const auth = useAuth();
-  const orgId = auth.orgId!;
+  // Handle editing data
+  useEffect(() => {
+    if (editingData && !hasEditingDataChanged.current) {
+      // Reset based on mode and what data is available
+      if (inputType === "asset" || ((editingData.assetId || editingData.asset_id) && inputType === "both")) {
+        setMode("asset");
+        if (editingData.assetId) setAssetId(editingData.assetId);
+        if (editingData.asset_id) setAssetId(editingData.asset_id);
+        if (editingData.value !== undefined) {
+          setAssetValue(editingData.value);
+          setAssetValueInput(editingData.value.toString());
+        }
+      } else {
+        setMode("factor");
+        if (editingData.factorId) setFactorId(editingData.factorId);
+        if (editingData.value !== undefined) {
+          setValue(editingData.value);
+          setInputValue(editingData.value.toString());
+        }
+      }
+      hasEditingDataChanged.current = true;
+    }
+  }, [editingData, inputType]);
 
-  // Get factor values based on input mode
-  const factorValue = selectedFactor?.factor || 0;
-  const assetFactorValue = assetLinkedFactor?.factor || 0;
+  // Get selected item details
+  const selectedFactor = filteredFactors.find(factor => factor.id === factorId);
+  const selectedAsset = availableAssets.find(asset => asset.id === assetId);
 
-  // Calculate emissions for preview
-  const calculatedFactorEmission = Math.round(((value * factorValue) + Number.EPSILON) * 100) / 100;
-  const convertedAssetValue = assetCount * assetConversionRate;
-  const calculatedAssetEmission = Math.round(((convertedAssetValue * assetFactorValue) + Number.EPSILON) * 100) / 100;
+  // Calculate emissions for preview (when applicable)
+  const selectedFactorValue = selectedFactor?.factor || 0;
 
+  const calculatedFactorEmission = typeof value === 'number' ?
+    Math.round(((value * selectedFactorValue) + Number.EPSILON) * 100) / 100 : 0;
+
+  const assetFactorValue = selectedAsset?.factor || 0; // Changed from kwh_per_asset to factor
+  const calculatedAssetEmission = typeof assetValue === 'number' && selectedAsset ?
+    Math.round(((assetValue * assetFactorValue * selectedAsset.conversion_rate) + Number.EPSILON) * 100) / 100 : 0;
+
+  // Form handling
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (mode === "factor") {
+    if (mode === "factor" && selectedFactor) {
       if (editingData) {
         await onEdit(editingData.id, {
           factorId,
-          value,
-          isAssetInput: false
+          value: value === "" ? 0 : value,
         });
       } else {
         await onSubmit({
           factorId,
-          value,
+          value: value === "" ? 0 : value,
           orgId,
-          factorValue,
-          isAssetInput: false
+          factorValue: selectedFactorValue,
         });
       }
-    } else { // asset mode
-      if (!selectedAsset) return; // Safety check
-
-      if (editingData) {
-        await onEdit(editingData.id, {
-          factorId: assetLinkedFactorId || 0,
-          value: convertedAssetValue,
-          isAssetInput: true,
-          assetId: selectedAssetId,
-          assetCount
-        });
-      } else {
-        await onSubmit({
-          factorId: assetLinkedFactorId || 0,
-          value: convertedAssetValue,
-          orgId,
-          factorValue: assetFactorValue,
-          isAssetInput: true,
-          assetId: selectedAssetId,
-          assetCount
-        });
-      }
-    }
-
-    // Reset form after submission
-    if (mode === "factor") {
-      setFactorId(filteredFactors[0]?.id || 0);
+      // Reset form after submission
       setValue(0);
       setInputValue("0");
-    } else {
-      setSelectedAssetId(filteredAssets[0]?.id || "");
-      setAssetCount(0);
-      setAssetCountInput("0");
+    } else if (mode === "asset" && selectedAsset) {
+      if (editingData) {
+        await onEdit(editingData.id, {
+          asset_id: assetId,
+          value: assetValue === "" ? 0 : assetValue,
+          recordedFactor: assetFactorValue,
+        });
+      } else {
+        await onSubmit({
+          asset_id: assetId,
+          value: assetValue === "" ? 0 : assetValue,
+          orgId,
+          recordedFactor: assetFactorValue,
+        });
+      }
+      // Reset form after submission
+      setAssetValue(0);
+      setAssetValueInput("0");
     }
 
-    hasEditingDataChanged.current = false; // Reset editing tracking
+    hasEditingDataChanged.current = false;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Input handlers
+  const handleFactorValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    // Allow empty string during editing
     setInputValue(newValue);
 
-    // Update the actual value only if it's a valid number
     if (newValue === "" || newValue === "-") {
       if (allowEmptyValues) {
-        setValue(newValue === "" ? "" as any : 0);
+        setValue(newValue === "" ? "" : 0);
       } else {
-        setValue(0); // Temporarily set to 0, but keep input field as empty
+        setValue(0);
       }
     } else {
       setValue(Number(newValue));
     }
   };
 
-  const handleAssetCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAssetValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    setAssetCountInput(newValue);
+    setAssetValueInput(newValue);
 
     if (newValue === "" || newValue === "-") {
       if (allowEmptyValues) {
-        setAssetCount(newValue === "" ? "" as any : 0);
+        setAssetValue(newValue === "" ? "" : 0);
       } else {
-        setAssetCount(0);
+        setAssetValue(0);
       }
     } else {
-      setAssetCount(Number(newValue));
+      setAssetValue(Number(newValue));
     }
   };
 
-  const handleInputBlur = () => {
-    // If field is empty or just a minus sign when focus is lost, set to 0
+  const handleValueBlur = () => {
     if (inputValue === "" || inputValue === "-") {
       setInputValue("0");
       setValue(0);
     }
   };
 
-  const handleAssetCountBlur = () => {
-    if (assetCountInput === "" || assetCountInput === "-") {
-      setAssetCountInput("0");
-      setAssetCount(0);
+  const handleAssetValueBlur = () => {
+    if (assetValueInput === "" || assetValueInput === "-") {
+      setAssetValueInput("0");
+      setAssetValue(0);
     }
   };
 
-  // Render the appropriate form based on inputType
+  // Render factor input form
   const renderFactorForm = () => (
     <>
       <label htmlFor="factor">
@@ -296,8 +246,8 @@ const DataInput = ({
           type="text"
           id="value"
           value={inputValue}
-          onChange={handleInputChange}
-          onBlur={handleInputBlur}
+          onChange={handleFactorValueChange}
+          onBlur={handleValueBlur}
           inputMode="numeric"
           pattern="-?[0-9]*\.?[0-9]*"
           className={css({
@@ -310,7 +260,7 @@ const DataInput = ({
           })}
         />
       </label>
-      {value > 0 && (
+      {value && selectedFactor && (
         <div className={css({ fontSize: "sm", color: "gray.600" })}>
           Estimated emissions: {calculatedFactorEmission} Kg CO₂e
         </div>
@@ -318,14 +268,15 @@ const DataInput = ({
     </>
   );
 
+  // Render asset input form
   const renderAssetForm = () => (
     <>
       <label htmlFor="asset">
         Asset:
         <select
           id="asset"
-          value={selectedAssetId}
-          onChange={(e) => setSelectedAssetId(e.target.value)}
+          value={assetId}
+          onChange={(e) => setAssetId(e.target.value)}
           className={css({
             display: "block",
             width: "full",
@@ -335,21 +286,21 @@ const DataInput = ({
             borderRadius: "md",
           })}
         >
-          {filteredAssets.map((asset) => (
+          {availableAssets.map((asset) => (
             <option key={asset.id} value={asset.id}>
               {asset.name} - {asset.unit}
             </option>
           ))}
         </select>
       </label>
-      <label htmlFor="assetCount">
-        Number of {selectedAsset?.name || "assets"}:
+      <label htmlFor="assetValue">
+        Quantity ({selectedAsset?.unit || "units"}):
         <input
           type="text"
-          id="assetCount"
-          value={assetCountInput}
-          onChange={handleAssetCountChange}
-          onBlur={handleAssetCountBlur}
+          id="assetValue"
+          value={assetValueInput}
+          onChange={handleAssetValueChange}
+          onBlur={handleAssetValueBlur}
           inputMode="numeric"
           pattern="-?[0-9]*\.?[0-9]*"
           className={css({
@@ -362,19 +313,17 @@ const DataInput = ({
           })}
         />
       </label>
-      {assetCount > 0 && selectedAsset && (
+      {assetValue && selectedAsset && (
         <div className={css({ fontSize: "sm", color: "gray.600" })}>
-          Converted value: {convertedAssetValue.toFixed(2)} {assetLinkedFactor?.unit || ""}
+          Factor value: {assetFactorValue} {selectedAsset.factor_unit || "kWh"} per {selectedAsset.unit}
+          <br />
+          Energy equivalent: {(Number(assetValue) * assetFactorValue).toFixed(2)} {selectedAsset.factor_unit || "kWh"}
           <br />
           Estimated emissions: {calculatedAssetEmission} Kg CO₂e
         </div>
       )}
     </>
   );
-
-  // Check if there are any factors or assets to display
-  const hasFactors = filteredFactors.length > 0;
-  const hasAssets = filteredAssets.length > 0;
 
   // Handle case where no data is available
   if ((inputType === "factor" && !hasFactors) ||
@@ -405,21 +354,18 @@ const DataInput = ({
       })}
     >
       <div className={flex({ flexDirection: "column", gap: 4 })}>
-        {/* Show input type selector if both modes are available */}
-        {inputType === "both" && (
+        {/* Show input type selector only if both modes are available and supported */}
+        {inputType === "both" && hasFactors && hasAssets && (
           <div className={flex({ gap: 4 })}>
             <button
               type="button"
               onClick={() => setMode("factor")}
-              disabled={!hasFactors}
               className={css({
                 p: 2,
                 bg: mode === "factor" ? "blue.500" : "gray.200",
                 color: mode === "factor" ? "white" : "gray.700",
                 borderRadius: "md",
                 flex: 1,
-                opacity: !hasFactors ? 0.5 : 1,
-                cursor: !hasFactors ? "not-allowed" : "pointer"
               })}
             >
               Factor Input
@@ -427,15 +373,12 @@ const DataInput = ({
             <button
               type="button"
               onClick={() => setMode("asset")}
-              disabled={!hasAssets}
               className={css({
                 p: 2,
                 bg: mode === "asset" ? "blue.500" : "gray.200",
                 color: mode === "asset" ? "white" : "gray.700",
                 borderRadius: "md",
                 flex: 1,
-                opacity: !hasAssets ? 0.5 : 1,
-                cursor: !hasAssets ? "not-allowed" : "pointer"
               })}
             >
               Asset Input
@@ -443,11 +386,9 @@ const DataInput = ({
           </div>
         )}
 
-        {/* Factor input form */}
-        {mode === "factor" && (inputType === "both" || inputType === "factor") && hasFactors && renderFactorForm()}
-
-        {/* Asset input form */}
-        {mode === "asset" && (inputType === "both" || inputType === "asset") && hasAssets && renderAssetForm()}
+        {/* Render the appropriate form based on mode and available data */}
+        {mode === "factor" && hasFactors && renderFactorForm()}
+        {mode === "asset" && hasAssets && renderAssetForm()}
 
         <button
           type="submit"

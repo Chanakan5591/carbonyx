@@ -163,6 +163,9 @@ export default function Shell() {
                 title: "ถามปลื้ม",
                 titleTextColor: "#ffffff",
                 welcomeMessage: "สวัสดีครับ ผมชื่อปลื้ม ถามคำถามเกี่ยวกับคาร์บอนกับผมได้เลยนะ",
+                height: 900,
+                fontSize: 18,
+                width: 500,
                 textInput: {
                   placeholder: 'สงสัยอะไรหรอ',
                   backgroundColor: '#ffffff',
@@ -176,6 +179,7 @@ export default function Shell() {
                   showAvatar: true,
                   avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
                 },
+                starterPrompts: ['วิเคราะห์การปลดปล่อยคาร์บอนภายในองค์กรให้หน่อย', 'มีส่วนไหนที่ปล่อยคาร์บอนเยอะเกินไปไหม ลดยังไงได้บ้าง', 'ตอนนี้เทรนด์คาร์บอนมีอะไรเกิดขึ้นบ้าง'],
                 userMessage: {
                   backgroundColor: '#496a57',
                   textColor: '#ffffff',
