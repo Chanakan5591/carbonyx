@@ -147,7 +147,7 @@ export default function Shell() {
         <Suspense fallback={<div>Loading...</div>}>
           <BubbleChat
             chatflowid="carbonyx"
-            apiHost="http://localhost:5173/api/flowise"
+            apiHost="https://carbonyx.chanakancloud.net/api/flowise"
             theme={{
               button: {
                 backgroundColor: '#496a57',
