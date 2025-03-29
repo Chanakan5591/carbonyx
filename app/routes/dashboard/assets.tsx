@@ -20,8 +20,9 @@ export default function Assets() {
         })}
       >
         Assets Management
-        We are working hard to get this going, but it's going to be great! In the meantime, please check out manual emissions pages for the current organization carbon emissions information
       </span>
+      <span>
+        We are working hard to get this going, but it's going to be great! In the meantime, please check out manual emissions pages for the current organization carbon emissions information</span>
 
     </div>
   );
