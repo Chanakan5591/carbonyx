@@ -21,7 +21,9 @@ export default [
       route("/stationary_fuels", "routes/dashboard/stationary_fuel.tsx"),
       route("/transportation", "routes/dashboard/transportation.tsx"),
       route("/waste", "routes/dashboard/waste.tsx"),
-      route("/factor", "routes/dashboard/factor.tsx")
+      route("/factor", "routes/dashboard/factor.tsx"),
+      route("/coming-soon-excel", "routes/dashboard/coming-soon.tsx", { id: "coming-soon-excel" }),
+      route("/coming-soon-erp", "routes/dashboard/coming-soon.tsx", { id: "coming-soon-erp" })
     ]),
   ]),
 ] satisfies RouteConfig;

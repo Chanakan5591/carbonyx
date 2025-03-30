@@ -38,6 +38,7 @@ export default function FactorRoute({ loaderData }: Route.ComponentProps) {
       >
         Custom Factors Configuration
       </span>
+      <span>The data are currently not editable, but soon it will be</span>
       <Table
         columns={columns}
         data={loaderData.availableFactors}

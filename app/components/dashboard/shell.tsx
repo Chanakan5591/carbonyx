@@ -109,7 +109,6 @@ export default function Shell() {
               <MenuItem
                 text="Manual Emissions"
                 icon="emissions"
-                route="/dashboard/emissions"
               >
                 <MenuItem text="Electricity" route="/dashboard/electricity" />
                 <MenuItem
@@ -121,6 +120,10 @@ export default function Shell() {
                   route="/dashboard/transportation"
                 />
                 <MenuItem text="Waste" route="/dashboard/waste" />
+              </MenuItem>
+              <MenuItem text="Integration" icon="integration">
+                <MenuItem text="Excel" route="/dashboard/coming-soon-excel" />
+                <MenuItem text="ERP" route="/dashboard/coming-soon-erp" />
               </MenuItem>
               <MenuItem text="Custom Factor" icon="emissions" route="/dashboard/factor" />
             </MenuSection>
