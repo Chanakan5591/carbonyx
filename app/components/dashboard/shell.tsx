@@ -122,6 +122,7 @@ export default function Shell() {
                 />
                 <MenuItem text="Waste" route="/dashboard/waste" />
               </MenuItem>
+              <MenuItem text="Custom Factor" icon="emissions" route="/dashboard/factor" />
             </MenuSection>
           </div>
           <div>

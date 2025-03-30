@@ -2,7 +2,7 @@ import { css } from "carbonyxation/css";
 import { flex } from "carbonyxation/patterns";
 import React, { useState, useEffect } from "react";
 
-interface Column {
+export interface Column {
   key: string;
   title: string;
   type: string;
