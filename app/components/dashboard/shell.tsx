@@ -125,7 +125,7 @@ export default function Shell() {
                 <MenuItem text="Excel" route="/dashboard/coming-soon-excel" />
                 <MenuItem text="ERP" route="/dashboard/coming-soon-erp" />
               </MenuItem>
-              <MenuItem text="Custom Factor" icon="emissions" route="/dashboard/factor" />
+              <MenuItem text="Custom Factor" icon="custom_factor" route="/dashboard/factor" />
             </MenuSection>
           </div>
           <div>
