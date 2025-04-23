@@ -105,6 +105,7 @@ export default function Shell() {
           <div>
             <MenuSection>
               <MenuItem text="Dashboard" icon="home" route="/dashboard" exact />
+              <MenuItem text="Navigation" icon="location" route="/dashboard/navigation" />
               <MenuItem text="Assets" icon="assets" route="/dashboard/assets" />
               <MenuItem
                 text="Manual Emissions"
@@ -168,7 +169,7 @@ export default function Shell() {
                 titleTextColor: "#ffffff",
                 welcomeMessage: "สวัสดีครับ ผมชื่อปลื้ม ถามคำถามเกี่ยวกับคาร์บอนกับผมได้เลยนะ",
                 height: 900,
-                fontSize: 18,
+                fontSize: 14,
                 width: 500,
                 textInput: {
                   placeholder: 'สงสัยอะไรหรอ',

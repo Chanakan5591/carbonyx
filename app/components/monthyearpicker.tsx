@@ -328,7 +328,9 @@ const MonthYearRangePicker = ({ value, onChange }: MonthRangePickerProps) => {
 
     // Validate selected date is not current month or in the future
     if (isInvalidFutureDate(selectedOption.date)) {
-      toast.error("Cannot select current or future months");
+      toast.error("Cannot select current or future months", {
+        position: 'top-right',
+      });
       return;
     }
 
@@ -351,7 +353,9 @@ const MonthYearRangePicker = ({ value, onChange }: MonthRangePickerProps) => {
 
       // Ensure end date is after or equal to start date
       if (startDate && isBefore(selectedOption.date, startDate.date)) {
-        toast.error("End date must be after start date");
+        toast.error("End date must be after start date", {
+          position: 'top-right',
+        });
         return;
       }
 

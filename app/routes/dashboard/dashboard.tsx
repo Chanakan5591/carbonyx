@@ -177,7 +177,11 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
         >
           Emission Dashboard
         </span>
-        <div className={hstack()}>
+        <div className={flex({
+          justifyContent: 'center',
+          alignItems: 'start',
+          gap: 4
+        })}>
           <MonthYearRangePicker value={dateRange} onChange={handleRangeChange} />
 
           <button
@@ -185,7 +189,7 @@ export default function Dashboard({ loaderData: data }: Route.ComponentProps) {
               setMonthYear((prev) => (prev === "month" ? "year" : "month"))
             }
             className={button({
-              color: 'primary'
+              color: 'primary',
             })}
           >
             {monthYear === 'year' ? 'Toggle Monthly' : 'Toggle Yearly'}

@@ -22,6 +22,7 @@ export default [
       route("/transportation", "routes/dashboard/transportation.tsx"),
       route("/waste", "routes/dashboard/waste.tsx"),
       route("/factor", "routes/dashboard/factor.tsx"),
+      route("/navigation", "routes/dashboard/navigation.tsx"),
       route("/coming-soon-excel", "routes/dashboard/coming-soon.tsx", { id: "coming-soon-excel" }),
       route("/coming-soon-erp", "routes/dashboard/coming-soon.tsx", { id: "coming-soon-erp" })
     ]),

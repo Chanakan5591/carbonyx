@@ -2,7 +2,7 @@ import type { Route } from './+types/flowise'
 import { getAuth } from '@clerk/react-router/ssr.server';
 import { data } from 'react-router'
 import webJsContent from '~/assets/flowise-web?raw'
-import { env } from '~/env';
+import { env } from '~/env.server';
 
 // Parse chatflow ID and domains from environment variable
 const getChatflowConfig = () => {

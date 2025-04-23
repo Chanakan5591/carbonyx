@@ -10,8 +10,6 @@ export const env = createEnv({
     FLOWISE_API_HOST: z.string(),
     FLOWISE_API_KEY: z.string()
   },
-  clientPrefix: "VITE_",
-  client: {},
 
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

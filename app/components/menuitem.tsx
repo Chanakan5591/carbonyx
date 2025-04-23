@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface MenuItemProps {
-  icon?: "home" | "information" | "history" | "circle" | "question" | "gear" | "emissions" | "assets" | "integration" | "custom_factor";
+  icon?: "home" | "information" | "history" | "circle" | "question" | "gear" | "emissions" | "assets" | "integration" | "custom_factor" | "location";
   text: string;
   route?: string;
   children?: React.ReactNode;
@@ -36,6 +36,8 @@ function getIcon(icon: MenuItemProps["icon"]) {
       return <i className="fa-solid fa-puzzle" />;
     case "custom_factor":
       return <i className="fa-solid fa-pencil" />;
+    case "location":
+      return <i className="fa-solid fa-location-dot" />;
     default:
       return <i className="fa-solid fa-angle-right" />;
   }

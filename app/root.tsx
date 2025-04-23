@@ -15,6 +15,7 @@ import 'react-resizable/css/styles.css'
 import { rootAuthLoader } from "@clerk/react-router/ssr.server";
 import { ClerkProvider } from "@clerk/react-router";
 import { Toaster } from 'sonner'
+import { css } from "carbonyxation/css";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.bunny.net" },
@@ -58,7 +59,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
       signUpFallbackRedirectUrl="/"
       signInFallbackRedirectUrl="/"
     >
-      <Toaster />
+      <Toaster richColors={true} />
       <Outlet />
     </ClerkProvider>
   );
