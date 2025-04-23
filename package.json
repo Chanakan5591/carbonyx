@@ -10,6 +10,7 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@carbonyx/lrm-graphhopper": "^1.4.0",
     "@clerk/backend": "^1.25.1",
     "@clerk/react-router": "^1.1.4",
     "@libsql/client": "^0.14.0",
@@ -26,7 +27,6 @@
     "isbot": "^5.1.17",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
-    "lrm-graphhopper": "^1.4.0",
     "lucide-react": "^0.476.0",
     "motion": "^12.5.0",
     "react": "^19.0.0",

@@ -22,7 +22,7 @@ const MapComponent = () => {
 
         // Import routing machine AFTER leaflet is loaded
         await import('leaflet-routing-machine');
-        await import('lrm-graphhopper')
+        await import('@carbonyx/lrm-graphhopper')
 
         // Fix the icon issue
         delete L.Icon.Default.prototype._getIconUrl;
