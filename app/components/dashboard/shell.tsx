@@ -174,7 +174,7 @@ export default function Shell() {
           <Outlet />
         </div>
         {renderBubble &&
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div></div>}>
             <BubbleChat
               chatflowid="carbonyx"
               apiHost="/api/flowise"

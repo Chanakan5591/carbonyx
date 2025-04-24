@@ -4,7 +4,7 @@ const button = cva({
   base: {
     padding: "2",
     minW: "8rem",
-    borderRadius: "full",
+    borderRadius: "lg",
     fontSize: "sm",
     fontWeight: "medium",
     cursor: "pointer",

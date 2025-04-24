@@ -48,17 +48,15 @@ export function NotebookItem({
             transition: "opacity 0.4s ease-in-out",
             opacity: isActive ? 1 : 0,
             bgGradient: "to-r",
-            gradientFrom: "white",
-            gradientVia: "accent.100",
-            gradientTo: "accent.200",
+            gradientFrom: "green.50",
+            gradientTo: "accent.50",
           },
           _hover: {
             _before: {
               opacity: 1,
               bgGradient: "to-r",
-              gradientFrom: "white",
-              gradientVia: isActive ? "accent.100" : "accent.50",
-              gradientTo: isActive ? "accent.200" : "accent.100",
+              gradientFrom: "green.50",
+              gradientTo: "accent.50",
             },
           },
         })}

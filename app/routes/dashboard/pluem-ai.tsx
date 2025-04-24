@@ -1,13 +1,13 @@
 import { css } from "carbonyxation/css";
 import { flex, hstack, vstack } from "carbonyxation/patterns";
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Clock } from "lucide-react";
 import { button } from "~/components/button";
 import { useEffect, useState } from "react";
 import { NotebookItem } from "~/components/notebookitem";
 import type { Route } from "./+types/pluem-ai";
 import { db } from "~/db/db";
-import { notebook, notebookMessage, type NotebookMessage } from "~/db/schema";
+import { notebook, notebookMessage, type Notebook, type NotebookMessage } from "~/db/schema";
 import { getAuth } from "@clerk/react-router/ssr.server";
 import { eq, and } from 'drizzle-orm'
 import { redirect } from 'react-router'
@@ -23,12 +23,20 @@ export async function loader(args: Route.LoaderArgs) {
 
   const notebooks = await db.select().from(notebook).where(and(eq(notebook.orgId, orgId), eq(notebook.userId, userId)))
   let messages: NotebookMessage[] = []
+  let currentNotebook: Notebook | null = null
+
 
   if (notebookId) {
-    messages = await db.select().from(notebookMessage).where(eq(notebookMessage.notebookId, notebookId))
+    // if user does not have access to this specific notebook in the first place, deny them
+    if (notebooks.filter(notebook => notebook.id === notebookId).length === 0) {
+      throw redirect('/dashboard/notebook')
+    }
+    messages = await db.select().from(notebookMessage).where(and(eq(notebookMessage.notebookId, notebookId)))
+    currentNotebook = notebooks.filter(notebook => notebook.id === notebookId)[0]
   }
 
-  return { notebooks, messages }
+
+  return { notebooks, currentNotebook, messages }
 }
 
 export default function PluemAI({ loaderData }: Route.ComponentProps) {
@@ -44,7 +52,7 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
 
   return (
     <PanelGroup direction="horizontal">
-      <Panel minSize={30} defaultSize={30} maxSize={60}>
+      <Panel minSize={30} defaultSize={30} maxSize={50}>
         <div className={vstack({
           p: 4,
           pt: 3,
@@ -67,16 +75,16 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
             overflow: 'hidden'
           })}>
             {loaderData.notebooks.map((notebook) => (
-              <NotebookItem title={notebook.name} date={new Date(notebook.timestamp).toLocaleString()} notebookId={notebook.id} />
+              <NotebookItem key={notebook.id} title={notebook.name} date={new Date(notebook.timestamp).toLocaleString()} notebookId={notebook.id} />
             ))}
           </div>
         </div>
       </Panel>
       <PanelResizeHandle className={css({
-        borderColor: "neutral.400",
-        borderWidth: 1
+        borderColor: "black",
+        borderWidth: .5
       })} />
-      <Panel>
+      <Panel defaultSize={70}>
         <div className={css({
           height: '100%',
           width: '100%',
@@ -85,77 +93,108 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
           <div className={flex({
             flexDir: 'column',
             justifyContent: 'space-between',
-            bg: 'white',
             height: '100%',
             width: '100%',
-            rounded: '2xl',
-            border: 'solid',
-            borderWidth: '1',
-            borderColor: 'black',
-            overflow: 'auto'
+            overflow: 'auto',
+            gap: 4
           })}>
-
-            {emptyConvo ? (
-              <div className={flex({
-                margin: 12,
-                marginTop: 32,
-                flexDirection: 'column',
-                height: 'full'
+            {!emptyConvo && (
+              <div className={hstack({
+                justifyContent: 'space-between'
               })}>
                 <div className={flex({
                   flexDir: 'column'
                 })}>
-
                   <span className={css({
-                    fontSize: 'xl',
-                    fontWeight: 'semibold',
-                    color: 'darkgreen'
-                  })}>Pluem AI is your AI Carbon Consultant.</span>
-                  <span className={css({
-                    fontSize: 'md',
-                    color: 'neutral.500'
-                  })}>What are you curious about?</span>
+                    fontSize: 24,
+                    fontWeight: 'semibold'
+                  })}>{loaderData.currentNotebook?.name}</span>
+                  <span className={flex({ gap: 2, alignItems: 'center' })}><Clock size={18} /> Created: {new Date(loaderData.currentNotebook!.timestamp).toLocaleString()}</span>
                 </div>
-              </div>
-            ) : (
-              <div>
-                {loaderData.messages.map(message => (
-                  <MessageBubble message={message.message} messageType={message.messageType} date={new Date(message.timestamp).toLocaleString()} author={message.authorRole} />
-                ))}
+                <button className={button({
+                  variant: 'solid',
+                  color: 'accent'
+                })}>Action</button>
               </div>
             )}
-            <div className={css({
-              width: 'full',
-              p: 4
+            <div className={flex({
+              flexDir: 'column',
+              justifyContent: 'space-between',
+              bg: 'white',
+              height: '100%',
+              width: '100%',
+              rounded: '2xl',
+              border: 'solid',
+              borderWidth: '1',
+              borderColor: 'black',
+              overflow: 'auto'
             })}>
-              <div className={css({
-                position: 'relative',
-              })}>
-                <input className={css({
-                  borderColor: 'darkgreen',
-                  borderWidth: 2,
-                  p: 2,
-                  border: 'solid',
-                  boxShadow: 'md',
-                  shadowColor: 'darkgreen',
-                  rounded: 'md',
-                  width: 'full',
-                  ring: 'none'
-                })} placeholder='Ask Pluem' />
+
+              {emptyConvo ? (
                 <div className={flex({
-                  position: 'absolute',
-                  w: 7,
-                  h: 7,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  bg: 'darkgreen',
-                  rounded: 'full',
-                  color: 'white',
-                  top: '14%',
-                  right: 3,
-                  cursor: 'pointer'
+                  margin: 12,
+                  marginTop: 32,
+                  flexDirection: 'column',
+                  height: 'full'
                 })}>
-                  < ArrowUp size={20} />
+                  <div className={flex({
+                    flexDir: 'column'
+                  })}>
+
+                    <span className={css({
+                      fontSize: 'xl',
+                      fontWeight: 'semibold',
+                      color: 'darkgreen'
+                    })}>Pluem AI is your AI Carbon Consultant.</span>
+                    <span className={css({
+                      fontSize: 'md',
+                      color: 'neutral.500'
+                    })}>What are you curious about?</span>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {loaderData.messages.map(message => (
+                    <MessageBubble key={message.id} message={message.message} messageType={message.messageType} date={new Date(message.timestamp).toLocaleString()} author={message.authorRole} />
+                  ))}
+                </div>
+              )}
+              <div className={css({
+                width: 'full',
+                p: 4
+              })}>
+                <div className={css({
+                  position: 'relative',
+                })}>
+                  <input className={css({
+                    borderColor: 'darkgreen',
+                    borderWidth: 2,
+                    p: 2,
+                    border: 'solid',
+                    boxShadow: 'md',
+                    shadowColor: 'darkgreen',
+                    rounded: 'md',
+                    width: 'full',
+                    ring: 'none',
+                    _placeholder: {
+                      fontStyle: 'italic'
+                    }
+                  })} placeholder='Ask Pluem...' />
+                  <div className={flex({
+                    position: 'absolute',
+                    w: 7,
+                    h: 7,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    bg: 'darkgreen',
+                    rounded: 'full',
+                    color: 'white',
+                    top: '14%',
+                    right: 3,
+                    cursor: 'pointer'
+                  })}>
+                    < ArrowUp size={20} />
+                  </div>
                 </div>
               </div>
             </div>

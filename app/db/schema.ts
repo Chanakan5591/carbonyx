@@ -133,6 +133,7 @@ export const notebookMessage = sqliteTable(
   ]
 )
 
+export type Notebook = typeof notebook.$inferSelect;
 export type NotebookMessage = typeof notebookMessage.$inferSelect;
 
 export type CollectedData = typeof collectedData.$inferSelect;
