@@ -15,6 +15,8 @@ export default [
   ...prefix("/dashboard", [
     layout("routes/dashboard/layout.tsx", [
       route("/", "routes/dashboard/dashboard.tsx"),
+      route("/notebook", "routes/dashboard/pluem-ai.tsx", { id: 'notebook-main' }),
+      route("/notebook/:notebookId", "routes/dashboard/pluem-ai.tsx", { id: 'notebook-id' }),
       route("/assets", "routes/dashboard/assets.tsx"),
       route("/info", "routes/dashboard/information.tsx"),
       route("/electricity", "routes/dashboard/electricity.tsx"),

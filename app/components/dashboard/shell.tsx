@@ -1,6 +1,6 @@
 import { css } from "carbonyxation/css";
 import { flex, hstack } from "carbonyxation/patterns";
-import { Outlet, Link, useRevalidator } from "react-router";
+import { Outlet, Link, useRevalidator, useLocation } from "react-router";
 import SmallLogo from "~/assets/logo_64x.png";
 import { MenuItem, MenuSection } from "../menuitem";
 import { OrganizationSwitcher, UserButton, useAuth } from "@clerk/react-router";
@@ -18,6 +18,16 @@ export default function Shell() {
   const auth = useAuth()
   const [currentOrgId, setCurrentOrgId] = useState("")
   const { revalidate } = useRevalidator()
+  const [renderBubble, setRenderBubble] = useState(true)
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/dashboard/notebook')) {
+      setRenderBubble(false)
+    } else {
+      setRenderBubble(true)
+    }
+  }, [location.pathname])
 
   useEffect(() => {
     if (!auth.isLoaded || !auth.isSignedIn) return
@@ -105,6 +115,20 @@ export default function Shell() {
           <div>
             <MenuSection>
               <MenuItem text="Dashboard" icon="home" route="/dashboard" exact />
+              <MenuItem text="Pluem AI" icon="comment" route="/dashboard/notebook" />
+
+              <div className={css({
+                p: 4,
+                borderBottomWidth: 1,
+                borderBottom: 'solid',
+                borderBottomColor: 'neutral.400'
+
+              })}>
+                <hr className={css({
+                  borderTopColor: 'neutral.500',
+                })} />
+              </div>
+
               <MenuItem text="Navigation" icon="location" route="/dashboard/navigation" />
               <MenuItem text="Assets" icon="assets" route="/dashboard/assets" />
               <MenuItem
@@ -149,59 +173,61 @@ export default function Shell() {
         >
           <Outlet />
         </div>
-        <Suspense fallback={<div>Loading...</div>}>
-          <BubbleChat
-            chatflowid="carbonyx"
-            apiHost="/api/flowise"
-            theme={{
-              button: {
-                backgroundColor: '#496a57',
-                right: 20,
-                bottom: 20,
-                size: 48,
-                dragAndDrop: true,
-                iconColor: 'white',
-              },
-              chatWindow: {
-                showTitle: true,
-                showAgentMessages: true,
-                title: "ถามปลื้ม",
-                titleTextColor: "#ffffff",
-                welcomeMessage: "สวัสดีครับ ผมชื่อปลื้ม ถามคำถามเกี่ยวกับคาร์บอนกับผมได้เลยนะ",
-                height: 900,
-                fontSize: 14,
-                width: 500,
-                textInput: {
-                  placeholder: 'สงสัยอะไรหรอ',
-                  backgroundColor: '#ffffff',
-                  textColor: '#303235',
-                  sendButtonColor: '#3B81F6',
-                  autoFocus: true,
-                },
-                botMessage: {
-                  backgroundColor: '#f7f5ef',
-                  textColor: '#303235',
-                  showAvatar: true,
-                  avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-                },
-                starterPrompts: ['วิเคราะห์การปลดปล่อยคาร์บอนภายในองค์กรให้หน่อย', 'มีส่วนไหนที่ปล่อยคาร์บอนเยอะเกินไปไหม ลดยังไงได้บ้าง', 'ตอนนี้เทรนด์คาร์บอนมีอะไรเกิดขึ้นบ้าง'],
-                userMessage: {
+        {renderBubble &&
+          <Suspense fallback={<div>Loading...</div>}>
+            <BubbleChat
+              chatflowid="carbonyx"
+              apiHost="/api/flowise"
+              theme={{
+                button: {
                   backgroundColor: '#496a57',
-                  textColor: '#ffffff',
-                  showAvatar: true,
-                  avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+                  right: 20,
+                  bottom: 20,
+                  size: 48,
+                  dragAndDrop: true,
+                  iconColor: 'white',
                 },
+                chatWindow: {
+                  showTitle: true,
+                  showAgentMessages: true,
+                  title: "ถามปลื้ม",
+                  titleTextColor: "#ffffff",
+                  welcomeMessage: "สวัสดีครับ ผมชื่อปลื้ม ถามคำถามเกี่ยวกับคาร์บอนกับผมได้เลยนะ",
+                  height: 900,
+                  fontSize: 14,
+                  width: 500,
+                  textInput: {
+                    placeholder: 'สงสัยอะไรหรอ',
+                    backgroundColor: '#ffffff',
+                    textColor: '#303235',
+                    sendButtonColor: '#3B81F6',
+                    autoFocus: true,
+                  },
+                  botMessage: {
+                    backgroundColor: '#f7f5ef',
+                    textColor: '#303235',
+                    showAvatar: true,
+                    avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+                  },
+                  starterPrompts: ['วิเคราะห์การปลดปล่อยคาร์บอนภายในองค์กรให้หน่อย', 'มีส่วนไหนที่ปล่อยคาร์บอนเยอะเกินไปไหม ลดยังไงได้บ้าง', 'ตอนนี้เทรนด์คาร์บอนมีอะไรเกิดขึ้นบ้าง'],
+                  userMessage: {
+                    backgroundColor: '#496a57',
+                    textColor: '#ffffff',
+                    showAvatar: true,
+                    avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+                  },
 
-                footer: {
-                  textColor: '#303235',
-                  text: 'Made with ❤️ by',
-                  company: 'Carbonyx',
-                  companyLink: 'https://carbonyx.chanakancloud.net/'
-                }
-              },
-            }}
-          />
-        </Suspense>
+                  footer: {
+                    textColor: '#303235',
+                    text: 'Made with ❤️ by',
+                    company: 'Carbonyx',
+                    companyLink: 'https://carbonyx.chanakancloud.net/'
+                  }
+                },
+              }}
+            />
+          </Suspense>
+        }
       </div>
     </div>
   );

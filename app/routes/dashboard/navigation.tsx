@@ -1,19 +1,54 @@
 import { css } from 'carbonyxation/css';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { env } from '~/env.client';
+
+// Separate component to handle routing that uses useMap hook
+const RoutingMachine = ({ libraries }) => {
+  const { useMap } = libraries;
+  const map = useMap(); // Get direct access to the map instance
+
+  useEffect(() => {
+    if (!map || !libraries) return;
+
+    const { L } = libraries;
+
+    if (!L.Routing) {
+      console.error("L.Routing is not available");
+      return;
+    }
+
+    // Create routing control
+    const routingControl = L.Routing.control({
+      router: new L.Routing.GraphHopper(undefined, {
+        useCustomModel: true,
+        alternativeRoute: true,
+        serviceUrl: env.VITE_GRAPHHOPPER_URL
+      }),
+      waypoints: [
+        L.latLng(13.4510, 99.6341),
+        L.latLng(13.7563, 100.5018)
+      ]
+    }).addTo(map);
+
+    // Clean up on unmount
+    return () => {
+      routingControl.remove();
+    };
+  }, [map, libraries]);
+
+  return null; // This component doesn't render anything visible
+};
 
 const MapComponent = () => {
   const [libraries, setLibraries] = useState(null);
-  const mapRef = useRef(null);
-  const routingControlRef = useRef(null);
 
-  // First effect to load all libraries
+  // Load all required libraries
   useEffect(() => {
     const loadLibraries = async () => {
       try {
         // Import CSS first
         await import('leaflet/dist/leaflet.css');
-        await import('leaflet-routing-machine/dist/leaflet-routing-machine.css')
+        await import('leaflet-routing-machine/dist/leaflet-routing-machine.css');
 
         // Import Leaflet and React-Leaflet
         const leafletModule = await import('leaflet');
@@ -22,7 +57,7 @@ const MapComponent = () => {
 
         // Import routing machine AFTER leaflet is loaded
         await import('leaflet-routing-machine');
-        await import('@carbonyx/lrm-graphhopper')
+        await import('@carbonyx/lrm-graphhopper');
 
         // Fix the icon issue
         delete L.Icon.Default.prototype._getIconUrl;
@@ -43,43 +78,9 @@ const MapComponent = () => {
     };
 
     loadLibraries();
-
-    // Cleanup function
-    return () => {
-      if (routingControlRef.current && mapRef.current) {
-        routingControlRef.current.remove();
-      }
-    };
   }, []);
 
-  // Second effect to set up routing when map and libraries are ready
-  useEffect(() => {
-    console.log(mapRef.current)
-    if (!libraries || !mapRef.current) return;
-
-    const { L } = libraries;
-
-    // Verify L.Routing exists before using it
-    if (L.Routing) {
-      try {
-        routingControlRef.current = L.Routing.control({
-          router: new L.Routing.GraphHopper(undefined, {
-            serviceUrl: env.VITE_GRAPHHOPPER_URL
-          }),
-          waypoints: [
-            L.latLng(13.4510, 99.6341),
-            L.latLng(13.7563, 100.5018)
-          ]
-        }).addTo(mapRef.current);
-      } catch (error) {
-        console.error("Error creating routing control:", error);
-      }
-    } else {
-      console.error("L.Routing is not available. Make sure leaflet-routing-machine is properly loaded.");
-    }
-  }, [libraries, mapRef.current]);
-
-  // Don't render anything until libraries are loaded
+  // Don't render until libraries are loaded
   if (!libraries) {
     return <div>Loading map...</div>;
   }
@@ -89,7 +90,6 @@ const MapComponent = () => {
   return (
     <div style={{ height: '100%', width: '100%' }}>
       <MapContainer
-        ref={mapRef}
         center={[13.7563, 100.5018]}
         zoom={13}
         scrollWheelZoom={true}
@@ -99,11 +99,14 @@ const MapComponent = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Marker position={[51.505, -0.09]}>
+        <Marker position={[13.7563, 100.5018]}>
           <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
+            Bangkok
           </Popup>
         </Marker>
+
+        {/* Add the routing component which uses useMap internally */}
+        <RoutingMachine libraries={libraries} />
       </MapContainer>
     </div>
   );

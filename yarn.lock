@@ -1262,13 +1262,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@carbonyx/lrm-graphhopper@npm:^1.4.0":
-  version: 1.4.1
-  resolution: "@carbonyx/lrm-graphhopper@npm:1.4.1"
+"@carbonyx/lrm-graphhopper@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@carbonyx/lrm-graphhopper@npm:2.1.0"
   dependencies:
     corslite: "npm:0.0.6"
     polyline: "npm:0.0.3"
-  checksum: 10c0/906faebed6870dd4920f9036a401f72619388098b0314b63df925637ce48fd53e4cce34f90ead453bb1b0b6f97bf63eb48ea4318ba3049ad93aaf070fad318c1
+  checksum: 10c0/2f88c832cdabddd1ac9d790fc40e7587d28c8b03d23fac6960ed8ca72ee86d70004468fbda9eac4aa450e3aa1f4dfa89f793cf74642597777d722696fd1be748
   languageName: node
   linkType: hard
 
@@ -3978,7 +3978,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "carbonyx-react@workspace:."
   dependencies:
-    "@carbonyx/lrm-graphhopper": "npm:^1.4.0"
+    "@carbonyx/lrm-graphhopper": "npm:^2.1.0"
     "@clerk/backend": "npm:^1.25.1"
     "@clerk/react-router": "npm:^1.1.4"
     "@libsql/client": "npm:^0.14.0"
@@ -4017,6 +4017,7 @@ __metadata:
     react-grid-layout: "npm:^1.5.1"
     react-leaflet: "npm:^5.0.0"
     react-resizable: "npm:^3.0.5"
+    react-resizable-panels: "npm:^2.1.8"
     react-router: "npm:^7.3.0"
     react-select: "npm:^5.10.1"
     sonner: "npm:^2.0.1"
@@ -7571,6 +7572,16 @@ __metadata:
   version: 0.14.2
   resolution: "react-refresh@npm:0.14.2"
   checksum: 10c0/875b72ef56b147a131e33f2abd6ec059d1989854b3ff438898e4f9310bfcc73acff709445b7ba843318a953cb9424bcc2c05af2b3d80011cee28f25aef3e2ebb
+  languageName: node
+  linkType: hard
+
+"react-resizable-panels@npm:^2.1.8":
+  version: 2.1.8
+  resolution: "react-resizable-panels@npm:2.1.8"
+  peerDependencies:
+    react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+    react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+  checksum: 10c0/9c1521e92f782e14ffce91b0cfef15eaecf62d0686c91028eb716e70d94c8eb1e51bc77a35a9c801b43b3c7fbc6cc07ee878a031ac833c36585214a76b48eb32
   languageName: node
   linkType: hard
 

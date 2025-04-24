@@ -10,7 +10,7 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
-    "@carbonyx/lrm-graphhopper": "^1.4.0",
+    "@carbonyx/lrm-graphhopper": "^2.1.0",
     "@clerk/backend": "^1.25.1",
     "@clerk/react-router": "^1.1.4",
     "@libsql/client": "^0.14.0",
@@ -37,6 +37,7 @@
     "react-grid-layout": "^1.5.1",
     "react-leaflet": "^5.0.0",
     "react-resizable": "^3.0.5",
+    "react-resizable-panels": "^2.1.8",
     "react-router": "^7.3.0",
     "react-select": "^5.10.1",
     "sonner": "^2.0.1",
