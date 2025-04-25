@@ -8,7 +8,9 @@ export const env = createEnv({
     CLERK_SECRET_KEY: z.string(),
     FLOWISE_CHATFLOW: z.string(),
     FLOWISE_API_HOST: z.string(),
-    FLOWISE_API_KEY: z.string()
+    FLOWISE_API_KEY: z.string(),
+    COUCH_USERNAME: z.string(),
+    COUCH_PASSWORD: z.string()
   },
 
   runtimeEnv: process.env,

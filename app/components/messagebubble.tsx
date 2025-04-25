@@ -31,9 +31,7 @@ export function MessageBubble({
             lineHeight: "1.5",
             whiteSpace: "pre-wrap",
             width: "100%",
-          })}>
-            {message}
-          </div>
+          })} dangerouslySetInnerHTML={{ __html: message }} />
         );
       // Additional message types can be added here
       default:
@@ -140,6 +138,7 @@ export function MessageBubble({
             alignItems: "flex-start",
             spacing: 0.5,
             flex: 1,
+            width: '80%'
           })}>
             {renderMessageContent()}
             {renderDateFooter()}

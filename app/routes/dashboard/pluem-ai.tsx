@@ -1,19 +1,24 @@
 import { css } from "carbonyxation/css";
 import { flex, hstack, vstack } from "carbonyxation/patterns";
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
-import { ArrowUp, Clock, Plus } from "lucide-react";
+import { ArrowUp, Clock, Plus, Trash, PencilLine } from "lucide-react";
 import { button } from "~/components/button";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NotebookItem } from "~/components/notebookitem";
 import type { Route } from "./+types/pluem-ai";
-import { db } from "~/db/db";
-import { notebook, notebookMessage, type Notebook, type NotebookMessage } from "~/db/schema";
+import { db, pluem_messages } from "~/db/db";
+import { notebook, type Notebook } from "~/db/schema";
 import { getAuth } from "@clerk/react-router/ssr.server";
 import { eq, and } from 'drizzle-orm'
 import { redirect } from 'react-router'
 import { MessageBubble } from "~/components/messagebubble";
+import { micromark } from 'micromark'
+
+import { gfmHtml, gfm } from 'micromark-extension-gfm'
 
 import { useChat } from '@ai-sdk/react'
+
+import { useFloating, useHover, useFocus, useDismiss, useRole, useInteractions, autoUpdate } from '@floating-ui/react'
 
 export async function loader(args: Route.LoaderArgs) {
   const notebookId = args.params.notebookId
@@ -22,31 +27,93 @@ export async function loader(args: Route.LoaderArgs) {
   const userId = auth.userId
   if (!orgId || !userId) throw redirect('/')
   const notebooks = await db.select().from(notebook).where(and(eq(notebook.orgId, orgId), eq(notebook.userId, userId)))
-  let messages: NotebookMessage[] = []
+  let messages: any[] = []
   let currentNotebook: Notebook | null = null
   if (notebookId) {
     // if user does not have access to this specific notebook in the first place, deny them
     if (notebooks.filter(notebook => notebook.id === notebookId).length === 0) {
       throw redirect('/dashboard/notebook')
     }
-    messages = await db.select().from(notebookMessage).where(and(eq(notebookMessage.notebookId, notebookId)))
+    try {
+      messages = (await pluem_messages.get(notebookId)).messages
+    } catch (ex) {
+      messages = []
+    }
     currentNotebook = notebooks.filter(notebook => notebook.id === notebookId)[0]
   }
   return { notebooks, currentNotebook, messages }
 }
 
+export async function action(args: Route.ActionArgs) {
+  const newId = crypto.randomUUID()
+  const auth = await getAuth(args)
+  const orgId = auth.orgId
+  const userId = auth.userId
+
+  if (!orgId || !userId) throw redirect('/')
+
+  await db.insert(notebook).values({
+    id: newId,
+    userId,
+    orgId,
+    timestamp: new Date().getTime(),
+    name: `New Notebook ${new Date().toLocaleDateString()}`
+  })
+
+  return redirect(`/dashboard/notebook/${newId}`)
+}
+
 export default function PluemAI({ loaderData }: Route.ComponentProps) {
   const [emptyConvo, setEmptyConvo] = useState(true)
-  const { messages, input, handleInputChange, handleSubmit } = useChat()
-  const [convoMessages, setConvoMessages] = useState([])
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    id: loaderData.currentNotebook?.id,
+    initialMessages: loaderData.messages,
+    sendExtraMessageFields: true
+  })
+  const messageInputRef = useRef<HTMLInputElement>(null)
+  const messagesEndRef = useRef(null);
+  const [isActionToolTipOpen, setIsActionToolTipOpen] = useState(false)
+
+  const { refs: actionToolTipRefs, floatingStyles, context } = useFloating({
+    open: isActionToolTipOpen,
+    onOpenChange: setIsActionToolTipOpen,
+    whileElementsMounted: autoUpdate
+  })
+
+  const hover = useHover(context, { move: false });
+  const focus = useFocus(context);
+  const dismiss = useDismiss(context);
+  const role = useRole(context, {
+    // If your reference element has its own label (text).
+    role: 'tooltip',
+  });
+
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    hover,
+    focus,
+    dismiss,
+    role,
+  ]);
+
+  // Scroll to the bottom of the messages container whenever messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]); // Dependency array includes messages to trigger the effect on change
 
   useEffect(() => {
-    if (loaderData.messages.length === 0) {
+    if (messages.length === 0) {
       setEmptyConvo(true)
     } else {
       setEmptyConvo(false)
     }
-  }, [loaderData.messages.length])
+  }, [messages])
+
+  const micromarkOpts = {
+    extensions: [gfm()],
+    htmlExtensions: [gfmHtml()]
+  }
 
   return (
     <PanelGroup direction="horizontal">
@@ -68,16 +135,18 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
                   fontSize: 16,
                   fontWeight: 'semibold'
                 })}>My Notebooks</span>
-                <button className={flex({
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgColor: 'primary.400',
-                  color: 'white',
-                  h: 6,
-                  w: 6,
-                  rounded: 'full',
-                  cursor: 'pointer'
-                })}><Plus size={18} /></button>
+                <form method="POST">
+                  <button type='submit' className={flex({
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgColor: 'primary.400',
+                    color: 'white',
+                    h: 6,
+                    w: 6,
+                    rounded: 'full',
+                    cursor: 'pointer'
+                  })}><Plus size={18} /></button>
+                </form>
               </div>
               <div className={css({
                 bgColor: 'white',
@@ -128,13 +197,13 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
                 height: 'full',
                 width: 'full',
                 p: 3,
-                overflow: 'auto'
+                overflowY: 'auto'
               })}>
               </div>
             </div>
           </Panel>
         </PanelGroup>
-      </Panel>
+      </Panel >
       <PanelResizeHandle className={css({
         borderColor: "black",
         borderWidth: .5
@@ -143,14 +212,13 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
         <div className={css({
           height: '100%',
           width: '100%',
-          padding: 4
+          padding: 4,
         })}>
           <div className={flex({
             flexDir: 'column',
             justifyContent: 'space-between',
             height: '100%',
             width: '100%',
-            overflow: 'auto',
             gap: 4
           })}>
             {!emptyConvo && (
@@ -169,12 +237,45 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
                 <button className={button({
                   variant: 'solid',
                   color: 'accent'
-                })}>Action</button>
+                })} aria-describedby="action-tooltip" ref={actionToolTipRefs.setReference} {...getReferenceProps()}>Action</button>
+                <div id="action-tooltip" className={css({
+                  bg: 'neutral.200',
+                  p: 1,
+                  zIndex: 10,
+                  mt: 2,
+                  rounded: 'md'
+                })} role="tooltip" ref={actionToolTipRefs.setFloating} style={floatingStyles} {...getFloatingProps()}>
+                  <div className={hstack({
+                    gap: 1,
+                    px: 4,
+                    py: 2,
+                    rounded: 'md',
+                    cursor: 'pointer',
+                    color: 'red.700',
+                    _hover: {
+                      bg: 'red.200'
+                    }
+                  })}>
+                    <Trash size={18} /> Delete
+                  </div>
+                  <div className={hstack({
+                    gap: 1,
+                    px: 4,
+                    py: 2,
+                    rounded: 'md',
+                    cursor: 'pointer',
+                    _hover: {
+                      bg: 'accent.50'
+                    }
+                  })}>
+                    <PencilLine size={18} /> Rename
+                  </div>
+                </div>
               </div>
             )}
             <div className={flex({
               flexDir: 'column',
-              justifyContent: 'space-between',
+              position: 'relative',
               bg: 'white',
               height: '100%',
               width: '100%',
@@ -182,7 +283,8 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
               border: 'solid',
               borderWidth: '1',
               borderColor: 'black',
-              overflow: 'auto'
+              overflowY: 'auto',
+              maxWidth: '100%'
             })}>
               {emptyConvo ? (
                 <div className={flex({
@@ -207,53 +309,72 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
                 </div>
               ) : (
                 <div>
-                  {loaderData.messages.map(message => (
+                  {/*                   {loaderData.messages.map(message => (
                     <MessageBubble key={message.id} message={message.message} messageType={message.messageType} date={new Date(message.timestamp).toLocaleString()} author={message.authorRole} />
+                  ))} */}
+                  {messages.map(message => (
+                    <>
+                      {message.parts.map((part, i) => {
+                        switch (part.type) {
+                          case 'text':
+                            return <MessageBubble key={`${message.id}-${i}`} message={micromark(part.text, micromarkOpts)} messageType='plain' date={message.createdAt!.toLocaleString()} author={message.role} />
+                        }
+                      })}
+                    </>
                   ))}
+                  <div ref={messagesEndRef} />
                 </div>
               )}
               <div className={css({
                 width: 'full',
-                p: 4
+                p: 4,
+                position: 'sticky',
+                bottom: 0,
+                backgroundColor: 'white', // Add background color to hide content scrolling underneath
+                zIndex: 10, // Ensure it stays on top of other content
+                borderTop: '1px solid rgba(0, 0, 0, 0.1)', // Optional: adds a subtle separator
+                marginTop: 'auto'
               })}>
                 <div className={css({
                   position: 'relative',
                 })}>
-                  <input className={css({
-                    borderColor: 'darkgreen',
-                    borderWidth: 2,
-                    p: 2,
-                    border: 'solid',
-                    boxShadow: 'md',
-                    shadowColor: 'darkgreen',
-                    rounded: 'md',
-                    width: 'full',
-                    ring: 'none',
-                    _placeholder: {
-                      fontStyle: 'italic'
-                    }
-                  })} placeholder='Ask Pluem...' />
-                  <div className={flex({
-                    position: 'absolute',
-                    w: 7,
-                    h: 7,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    bg: 'darkgreen',
-                    rounded: 'full',
-                    color: 'white',
-                    top: '14%',
-                    right: 3,
-                    cursor: 'pointer'
-                  })}>
-                    <ArrowUp size={20} />
-                  </div>
+                  <form onSubmit={handleSubmit}>
+                    <input onChange={handleInputChange} ref={messageInputRef} className={css({
+                      borderColor: 'darkgreen',
+                      borderWidth: 2,
+                      p: 2,
+                      border: 'solid',
+                      boxShadow: 'md',
+                      shadowColor: 'darkgreen',
+                      rounded: 'md',
+                      width: 'full',
+                      ring: 'none',
+                      _placeholder: {
+                        fontStyle: 'italic'
+                      }
+                    })} placeholder='Ask Pluem...' />
+                    <button type='submit' onClick={() => messageInputRef.current!.value = ""} className={flex({
+                      position: 'absolute',
+                      w: 7,
+                      h: 7,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      bg: 'darkgreen',
+                      rounded: 'full',
+                      color: 'white',
+                      top: '14%',
+                      right: 3,
+                      cursor: 'pointer'
+                    })}>
+                      <ArrowUp size={20} />
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </Panel>
-    </PanelGroup>
+    </PanelGroup >
   )
 }

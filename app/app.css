@@ -4,18 +4,55 @@ tokens,
 recipes,
 utilities;
 
+h1 {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+pre {
+  max-height: 200px;
+  /* Set a max height for the scrolling */
+  overflow: auto;
+  /* Enables vertical scrolling */
+  background: #f5f5f5;
+  /* Background color for contrast */
+  padding: 10px;
+  /* Padding for better appearance */
+  border: 1px solid #ddd;
+  /* Border around the code block */
+  border-radius: 8px;
+  /* Softer edges */
+  font-family: monospace;
+  /* Use a monospaced font for code */
+  white-space: pre;
+  /* Preserve whitespace */
+  margin: 0;
+  /* Removes default margin from <pre> */
+  max-width: 100%;
+  display: flex;
+}
+
+#arrow {
+  position: absolute;
+  background: #222;
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+}
+
 html {
-    background-color: #fffaf5;
+  background-color: #fffaf5;
 }
 
 body {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 14px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
 }
 
 #landing {
-    background-image: url("/bg.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+  background-image: url("/bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }

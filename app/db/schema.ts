@@ -113,28 +113,7 @@ export const notebook = sqliteTable(
   ]
 )
 
-export const notebookMessage = sqliteTable(
-  "notebook_message",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    notebookId: text("notebook_id")
-      .references(() => notebook.id), // Define foreign key inline
-    authorRole: text("author_role").notNull(),
-    messageType: text("message_type").notNull(), // plain message, tool calls, data viz, etc.
-    message: text("message").notNull(),
-    timestamp: integer("timestamp")
-      .notNull()
-      .$defaultFn(() => (Date.now() / 1000) | 0)
-  },
-  (table) => [
-    index("notebook_messages_notebook_id").on(table.notebookId)
-  ]
-)
-
 export type Notebook = typeof notebook.$inferSelect;
-export type NotebookMessage = typeof notebookMessage.$inferSelect;
 
 export type CollectedData = typeof collectedData.$inferSelect;
 

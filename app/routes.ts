@@ -11,6 +11,7 @@ export default [
   route("/signin/*", "routes/sign-in.tsx"),
   route("/signup/*", "routes/sign-up.tsx"),
   route("/api/flowise/*", "routes/api/flowise.tsx"),
+  route("/api/chat", "routes/api/chat.tsx"),
   route("/onboarding", "routes/onboarding.tsx"),
   ...prefix("/dashboard", [
     layout("routes/dashboard/layout.tsx", [
