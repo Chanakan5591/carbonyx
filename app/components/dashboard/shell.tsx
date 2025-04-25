@@ -118,15 +118,17 @@ export default function Shell() {
               <MenuItem text="Pluem AI" icon="comment" route="/dashboard/notebook" />
 
               <div className={css({
-                p: 4,
+                p: 2,
+                pt: 4,
                 borderBottomWidth: 1,
                 borderBottom: 'solid',
                 borderBottomColor: 'neutral.400'
 
               })}>
-                <hr className={css({
-                  borderTopColor: 'neutral.500',
-                })} />
+                <span className={css({
+                  fontWeight: 'semibold',
+                  color: 'neutral.600'
+                })}>Inventory</span>
               </div>
 
               <MenuItem text="Navigation" icon="location" route="/dashboard/navigation" />

@@ -13,6 +13,8 @@ import { eq, and } from 'drizzle-orm'
 import { redirect } from 'react-router'
 import { MessageBubble } from "~/components/messagebubble";
 
+import { useChat } from '@ai-sdk/react'
+
 export async function loader(args: Route.LoaderArgs) {
   const notebookId = args.params.notebookId
   const auth = await getAuth(args)
@@ -35,6 +37,8 @@ export async function loader(args: Route.LoaderArgs) {
 
 export default function PluemAI({ loaderData }: Route.ComponentProps) {
   const [emptyConvo, setEmptyConvo] = useState(true)
+  const { messages, input, handleInputChange, handleSubmit } = useChat()
+  const [convoMessages, setConvoMessages] = useState([])
 
   useEffect(() => {
     if (loaderData.messages.length === 0) {
