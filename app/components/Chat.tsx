@@ -1,4 +1,3 @@
-// chat.tsx (modified)
 import { css } from "carbonyxation/css"
 import { flex, hstack } from "carbonyxation/patterns"
 import { useEffect, useRef, useState } from "react"
@@ -33,6 +32,10 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
   const [isActionToolTipOpen, setIsActionToolTipOpen] = useState(false)
   const arrowRef = useRef(null)
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
+
+  // New state for rename functionality
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState(currentNotebook?.name || '');
 
   // Safely initialize with empty array if initialMessagesCurrentNotebook is null
   const initialMessages = initialMessagesCurrentNotebook?.messages || []
@@ -86,6 +89,74 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
     role,
   ]);
 
+  // Handler for delete button
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this notebook?')) {
+      // Submit a form to the server
+      const form = document.createElement('form');
+      form.method = 'POST';
+
+      const actionInput = document.createElement('input');
+      actionInput.type = 'hidden';
+      actionInput.name = 'action';
+      actionInput.value = 'delete';
+      form.appendChild(actionInput);
+
+      const notebookIdInput = document.createElement('input');
+      notebookIdInput.type = 'hidden';
+      notebookIdInput.name = 'notebookId';
+      notebookIdInput.value = currentNotebook?.id || '';
+      form.appendChild(notebookIdInput);
+
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+    }
+  };
+
+  // Handler for rename button click
+  const handleRenameClick = () => {
+    if (currentNotebook) {
+      setNewName(currentNotebook.name);
+      setIsRenaming(true);
+      setIsActionToolTipOpen(false); // Close the action tooltip
+    }
+  };
+
+  // Handler for rename form submission
+  const handleRenameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (currentNotebook && newName.trim()) {
+      // Submit a form to the server
+      const form = document.createElement('form');
+      form.method = 'POST';
+
+      const actionInput = document.createElement('input');
+      actionInput.type = 'hidden';
+      actionInput.name = 'action';
+      actionInput.value = 'rename';
+      form.appendChild(actionInput);
+
+      const notebookIdInput = document.createElement('input');
+      notebookIdInput.type = 'hidden';
+      notebookIdInput.name = 'notebookId';
+      notebookIdInput.value = currentNotebook.id;
+      form.appendChild(notebookIdInput);
+
+      const newNameInput = document.createElement('input');
+      newNameInput.type = 'hidden';
+      newNameInput.name = 'newName';
+      newNameInput.value = newName;
+      form.appendChild(newNameInput);
+
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+
+      setIsRenaming(false);
+    }
+  };
+
   // Scroll to the bottom of the messages container whenever messages change
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -98,16 +169,12 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
     // 1. Messages from the database (initialMessagesCurrentNotebook)
     // 2. Messages from the useChat state (messages)
     // 3. An initial message being processed
-
     const hasInitialMessages = initialMessagesCurrentNotebook?.messages?.length > 0;
     const hasCurrentMessages = messages.length > 0;
     const hasInitialMessageParameter = Boolean(currentNotebook && initialMessage && !initialMessageProcessed);
-
     const conversationIsEmpty = !hasInitialMessages && !hasCurrentMessages && !hasInitialMessageParameter;
-
     // Set the state based on our comprehensive check
     setEmptyConvo(conversationIsEmpty);
-
     // Log for debugging
     console.log("Conversation state:", {
       hasInitialMessages,
@@ -115,16 +182,15 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
       hasInitialMessageParameter,
       conversationIsEmpty
     });
-
   }, [initialMessagesCurrentNotebook, messages, currentNotebook, initialMessage, initialMessageProcessed]);
 
   const hasInitialMessageBeenProcessed = useRef(false);
+
   // In Chat.tsx
   useEffect(() => {
     // Use a ref to ensure we don't trigger this multiple times
-
     const processInitialMessage = async () => {
-      // Only process if we have a currentNotebook, initialMessage exists, 
+      // Only process if we have a currentNotebook, initialMessage exists,
       // and we haven't processed it yet (both in state and ref)
       if (
         currentNotebook &&
@@ -134,30 +200,24 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
       ) {
         // Set the ref immediately to prevent duplicate processing
         hasInitialMessageBeenProcessed.current = true;
-
         // Set the state
         setInitialMessageProcessed(true);
-
         // Clean up URL first to avoid further triggering
         if (window.history.replaceState) {
           const url = new URL(window.location.href);
           url.searchParams.delete('initialMessage');
           window.history.replaceState({}, document.title, url.toString());
         }
-
         // Then append the message (this will trigger the AI)
         await append({
           role: 'user',
           content: initialMessage
         });
-
         // Force UI update
         setEmptyConvo(false);
       }
     };
-
     processInitialMessage();
-
     // Remove `append` from the dependencies to avoid re-triggering
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentNotebook, initialMessage, initialMessageProcessed]);
@@ -165,12 +225,9 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const inputValue = messageInputRef.current?.value || '';
-
     if (inputValue.trim() === '') return;
-
     console.log(inputValue)
     console.log(currentNotebook)
-
     if (currentNotebook) {
       // For existing notebook - use AI chat
       aiHandleSubmit(e);
@@ -178,23 +235,24 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
       // For new notebook creation, use a form with method POST
       const form = document.createElement('form');
       form.method = 'POST';
-
       // Add the message as hidden input
       const hiddenInput = document.createElement('input');
       hiddenInput.type = 'hidden';
       hiddenInput.name = 'message';
       hiddenInput.value = inputValue;
       form.appendChild(hiddenInput);
-
       document.body.appendChild(form);
       form.submit();
       form.remove();
     }
-
     if (messageInputRef.current) {
       messageInputRef.current.value = '';
     }
   };
+
+  useEffect(() => {
+    messageInputRef.current?.focus()
+  }, [])
 
   return (
     <div className={css({
@@ -249,29 +307,35 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className={hstack({
-                      gap: 1,
-                      px: 4,
-                      py: 2,
-                      rounded: 'md',
-                      cursor: 'pointer',
-                      color: 'red.700',
-                      _hover: {
-                        bg: 'red.200'
-                      }
-                    })}>
+                    <div
+                      className={hstack({
+                        gap: 1,
+                        px: 4,
+                        py: 2,
+                        rounded: 'md',
+                        cursor: 'pointer',
+                        color: 'red.700',
+                        _hover: {
+                          bg: 'red.200'
+                        }
+                      })}
+                      onClick={handleDelete}
+                    >
                       <Trash size={18} /> Delete
                     </div>
-                    <div className={hstack({
-                      gap: 1,
-                      px: 4,
-                      py: 2,
-                      rounded: 'md',
-                      cursor: 'pointer',
-                      _hover: {
-                        bg: 'accent.50'
-                      }
-                    })}>
+                    <div
+                      className={hstack({
+                        gap: 1,
+                        px: 4,
+                        py: 2,
+                        rounded: 'md',
+                        cursor: 'pointer',
+                        _hover: {
+                          bg: 'accent.50'
+                        }
+                      })}
+                      onClick={handleRenameClick}
+                    >
                       <PencilLine size={18} /> Rename
                     </div>
                     <FloatingArrow fill='#e5e5e5' ref={arrowRef} context={context} />
@@ -391,6 +455,63 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
           </div>
         </div>
       </div>
+
+      {/* Rename Modal */}
+      {isRenaming && (
+        <div className={css({
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bg: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 50
+        })}>
+          <div className={css({
+            bg: 'white',
+            p: 4,
+            rounded: 'md',
+            maxWidth: '80%',
+            width: '400px'
+          })}>
+            <form onSubmit={handleRenameSubmit}>
+              <h2 className={css({ fontSize: 'xl', mb: 2 })}>Rename Notebook</h2>
+              <input
+                className={css({
+                  borderColor: 'gray.300',
+                  borderWidth: 1,
+                  p: 2,
+                  border: 'solid',
+                  rounded: 'md',
+                  width: 'full',
+                  mb: 4
+                })}
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                autoFocus
+              />
+              <div className={hstack({ gap: 2, justifyContent: 'flex-end' })}>
+                <button
+                  type="button"
+                  className={button({ variant: 'outline' })}
+                  onClick={() => setIsRenaming(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={button({ variant: 'solid', color: 'accent' })}
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

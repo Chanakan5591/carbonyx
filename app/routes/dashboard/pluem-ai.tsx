@@ -60,32 +60,97 @@ export async function loader(args: Route.LoaderArgs) {
 }
 
 export async function action(args: Route.ActionArgs) {
-  const formData = await args.request.formData()
-  const initialMessage = formData.get('message') as string || ''
-  const newId = crypto.randomUUID()
-  const auth = await getAuth(args)
-  const orgId = auth.orgId
-  const userId = auth.userId
-  if (!orgId || !userId) throw redirect('/')
+  const formData = await args.request.formData();
+  const action = formData.get('action') as string;
 
-  // Create the notebook
-  await db.insert(notebook).values({
-    id: newId,
-    userId,
-    orgId,
-    timestamp: new Date().getTime(),
-    name: `New Notebook`
-  })
+  const auth = await getAuth(args);
+  const orgId = auth.orgId;
+  const userId = auth.userId;
 
-  // Initialize the messages document as empty (don't save initial message yet)
-  try {
-    await pluem_messages.insert({ messages: [] }, newId)
-  } catch (err) {
-    console.error("Failed to initialize messages document:", err);
+  if (!orgId || !userId) throw redirect('/');
+
+  // Create a new notebook (default action if no action specified)
+  if (!action || action === 'create') {
+    const initialMessage = formData.get('message') as string || '';
+    const newId = crypto.randomUUID();
+
+    // Create the notebook
+    await db.insert(notebook).values({
+      id: newId,
+      userId,
+      orgId,
+      timestamp: new Date().getTime(),
+      name: `New Notebook`
+    });
+
+    // Initialize the messages document as empty
+    try {
+      await pluem_messages.insert({ messages: [] }, newId);
+    } catch (err) {
+      console.error("Failed to initialize messages document:", err);
+    }
+
+    // Pass the initial message as a URL parameter
+    return redirect(`/dashboard/notebook/${newId}${initialMessage ? `?initialMessage=${encodeURIComponent(initialMessage)}` : ''}`);
   }
 
-  // Pass the initial message as a URL parameter
-  return redirect(`/dashboard/notebook/${newId}${initialMessage ? `?initialMessage=${encodeURIComponent(initialMessage)}` : ''}`);
+  // Delete a notebook
+  if (action === 'delete') {
+    const notebookId = formData.get('notebookId') as string;
+
+    if (!notebookId) {
+      return { error: 'Notebook ID is required' };
+    }
+
+    // Check if user has access to this notebook
+    const userNotebooks = await db.select().from(notebook).where(
+      and(eq(notebook.orgId, orgId), eq(notebook.userId, userId), eq(notebook.id, notebookId))
+    );
+
+    if (userNotebooks.length === 0) {
+      return { error: 'Notebook not found or you do not have permission to delete it' };
+    }
+
+    // Delete from the database
+    await db.delete(notebook).where(eq(notebook.id, notebookId));
+
+    // Delete messages
+    try {
+      await pluem_messages.destroy(notebookId);
+    } catch (err) {
+      console.error("Failed to delete messages document:", err);
+    }
+
+    return redirect('/dashboard/notebook');
+  }
+
+  // Rename a notebook
+  if (action === 'rename') {
+    const notebookId = formData.get('notebookId') as string;
+    const newName = formData.get('newName') as string;
+
+    if (!notebookId || !newName) {
+      return { error: 'Notebook ID and new name are required' };
+    }
+
+    // Check if user has access to this notebook
+    const userNotebooks = await db.select().from(notebook).where(
+      and(eq(notebook.orgId, orgId), eq(notebook.userId, userId), eq(notebook.id, notebookId))
+    );
+
+    if (userNotebooks.length === 0) {
+      return { error: 'Notebook not found or you do not have permission to rename it' };
+    }
+
+    // Update the name
+    await db.update(notebook)
+      .set({ name: newName })
+      .where(eq(notebook.id, notebookId));
+
+    return redirect(`/dashboard/notebook/${notebookId}`);
+  }
+
+  return { error: 'Invalid action' };
 }
 
 export default function PluemAI({ loaderData }: Route.ComponentProps) {
@@ -182,12 +247,14 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
       })} />
       <Panel defaultSize={70}>
         <React.Suspense fallback={
-          <div className={hstack({
+          <div className={flex({
+            fontSize: 18,
+            fontWeight: 'semibold',
             height: 'full',
             width: 'full',
             padding: 4,
           })}>
-            <div>Loading Conversation...</div>
+            <div>Loading Notebook...</div>
           </div>
         }>
           {loaderData.messagesAsync ? (
