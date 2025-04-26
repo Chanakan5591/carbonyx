@@ -10,7 +10,7 @@ import type { Route } from "./+types/pluem-ai";
 import { db, pluem_messages } from "~/db/db";
 import { notebook, type Notebook } from "~/db/schema";
 import { getAuth } from "@clerk/react-router/ssr.server";
-import { eq, and } from 'drizzle-orm'
+import { eq, and, or } from 'drizzle-orm'
 import { redirect, Await } from 'react-router'
 import type { DocumentGetResponse } from "nano";
 import Chat from "~/components/Chat";
@@ -26,7 +26,20 @@ export async function loader(args: Route.LoaderArgs) {
 
   if (!orgId || !userId) throw redirect('/')
 
-  const notebooks = (await db.select().from(notebook).where(and(eq(notebook.orgId, orgId), eq(notebook.userId, userId)))).reverse()
+  const allAccessibleNotebooks = (await db.select().from(notebook).where(
+    and(
+      eq(notebook.orgId, orgId),
+      or(
+        eq(notebook.userId, userId),  // notebooks owned by the user
+        eq(notebook.shared, true)     // shared notebooks
+      )
+    )
+  )).reverse();
+
+  // Filter in JavaScript to separate into owned vs shared
+  const myNotebooks = allAccessibleNotebooks.filter(nb => nb.userId === userId);
+  const sharedNotebooks = allAccessibleNotebooks.filter(nb => nb.userId !== userId);
+
   let messages: Promise<DocumentGetResponse> | null = null
   let currentNotebook: Notebook | null = null
   let initialMessage = null
@@ -37,10 +50,10 @@ export async function loader(args: Route.LoaderArgs) {
 
   if (notebookId) {
     // if user does not have access to this specific notebook in the first place, deny them
-    if (notebooks.filter(notebook => notebook.id === notebookId).length === 0) {
+    if (allAccessibleNotebooks.filter(notebook => notebook.id === notebookId).length === 0) {
       throw redirect('/dashboard/notebook')
     }
-    currentNotebook = notebooks.filter(notebook => notebook.id === notebookId)[0]
+    currentNotebook = allAccessibleNotebooks.filter(notebook => notebook.id === notebookId)[0]
 
     // Check if messages document exists, if not create it with empty messages array
     try {
@@ -56,7 +69,7 @@ export async function loader(args: Route.LoaderArgs) {
     }
   }
 
-  return { notebooks, currentNotebook, messagesAsync: messages, initialMessage }
+  return { myNotebooks, sharedNotebooks, currentNotebook, messagesAsync: messages, initialMessage, currentUserId: userId }
 }
 
 export async function action(args: Route.ActionArgs) {
@@ -102,7 +115,7 @@ export async function action(args: Route.ActionArgs) {
       return { error: 'Notebook ID is required' };
     }
 
-    // Check if user has access to this notebook
+    // Check if user has access to this notebook (only owner can delete)
     const userNotebooks = await db.select().from(notebook).where(
       and(eq(notebook.orgId, orgId), eq(notebook.userId, userId), eq(notebook.id, notebookId))
     );
@@ -116,7 +129,8 @@ export async function action(args: Route.ActionArgs) {
 
     // Delete messages
     try {
-      await pluem_messages.destroy(notebookId);
+      const doc = await pluem_messages.get(notebookId);
+      await pluem_messages.destroy(notebookId, doc._rev);
     } catch (err) {
       console.error("Failed to delete messages document:", err);
     }
@@ -145,6 +159,32 @@ export async function action(args: Route.ActionArgs) {
     // Update the name
     await db.update(notebook)
       .set({ name: newName })
+      .where(eq(notebook.id, notebookId));
+
+    return redirect(`/dashboard/notebook/${notebookId}`);
+  }
+
+  // Add this inside your action function in page.tsx
+  if (action === 'toggleShare') {
+    const notebookId = formData.get('notebookId') as string;
+    const currentSharedStatus = formData.get('currentSharedStatus') === 'true';
+
+    if (!notebookId) {
+      return { error: 'Notebook ID is required' };
+    }
+
+    // Check if user has access to this notebook (only owner can share/unshare)
+    const userNotebooks = await db.select().from(notebook).where(
+      and(eq(notebook.orgId, orgId), eq(notebook.userId, userId), eq(notebook.id, notebookId))
+    );
+
+    if (userNotebooks.length === 0) {
+      return { error: 'Notebook not found or you do not have permission to share/unshare it' };
+    }
+
+    // Toggle the shared status
+    await db.update(notebook)
+      .set({ shared: !currentSharedStatus })
       .where(eq(notebook.id, notebookId));
 
     return redirect(`/dashboard/notebook/${notebookId}`);
@@ -197,7 +237,7 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
                 width: 'full',
                 overflowY: 'auto'
               })}>
-                {loaderData.notebooks.map((notebook) => (
+                {loaderData.myNotebooks.map((notebook) => (
                   <NotebookItem key={notebook.id} title={notebook.name} date={new Date(notebook.timestamp).toLocaleString()} notebookId={notebook.id} />
                 ))}
               </div>
@@ -233,9 +273,11 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
                 rounded: '2xl',
                 height: 'full',
                 width: 'full',
-                p: 3,
                 overflowY: 'auto'
               })}>
+                {loaderData.sharedNotebooks.map((notebook) => (
+                  <NotebookItem key={notebook.id} title={notebook.name} date={new Date(notebook.timestamp).toLocaleString()} notebookId={notebook.id} />
+                ))}
               </div>
             </div>
           </Panel>
@@ -269,6 +311,7 @@ export default function PluemAI({ loaderData }: Route.ComponentProps) {
                   initialMessagesCurrentNotebook={resolvedInitialMessages}
                   currentNotebook={loaderData.currentNotebook}
                   initialMessage={loaderData.initialMessage}
+                  currentUserId={loaderData.currentUserId}
                 />
               )}
             </Await>

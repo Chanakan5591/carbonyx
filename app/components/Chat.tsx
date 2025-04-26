@@ -9,7 +9,7 @@ import { useChat } from '@ai-sdk/react'
 import { button } from "./button";
 import { arrow, FloatingArrow, autoUpdate, FloatingFocusManager, useFloating, useDismiss, useClick, useRole, useInteractions } from "@floating-ui/react";
 import { gfm, gfmHtml } from "micromark-extension-gfm";
-import { ArrowUp, Clock, Trash, PencilLine } from "lucide-react";
+import { ArrowUp, Clock, Trash, PencilLine, Share } from "lucide-react";
 import { motion, AnimatePresence } from 'motion/react'
 import React from "react";
 import { useNavigate } from "react-router";
@@ -18,10 +18,12 @@ interface Props {
   initialMessagesCurrentNotebook: Message[] | null
   currentNotebook: Notebook | null
   initialMessage?: string | null
+  currentUserId?: string
 }
 
-export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, initialMessage }: Props) {
-  const navigate = useNavigate();
+export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, initialMessage, currentUserId }: Props) {
+  const isNotebookOwner = currentNotebook?.userId === currentUserId;
+
   const micromarkOpts = {
     extensions: [gfm()],
     htmlExtensions: [gfmHtml()]
@@ -91,6 +93,7 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
 
   // Handler for delete button
   const handleDelete = () => {
+    if (!isNotebookOwner) return;
     if (confirm('Are you sure you want to delete this notebook?')) {
       // Submit a form to the server
       const form = document.createElement('form');
@@ -116,7 +119,7 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
 
   // Handler for rename button click
   const handleRenameClick = () => {
-    if (currentNotebook) {
+    if (currentNotebook && isNotebookOwner) {
       setNewName(currentNotebook.name);
       setIsRenaming(true);
       setIsActionToolTipOpen(false); // Close the action tooltip
@@ -254,6 +257,52 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
     messageInputRef.current?.focus()
   }, [])
 
+  // Add these state variables to your Chat component
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCurrentlyShared, setIsCurrentlyShared] = useState(currentNotebook?.shared || false);
+
+  // Add this handler function to your Chat component
+  const handleShareClick = () => {
+    if (currentNotebook && isNotebookOwner) {
+      setIsShareModalOpen(true);
+      setIsActionToolTipOpen(false); // Close the action tooltip
+    }
+  };
+
+  // Add this submit handler function to your Chat component
+  const handleShareSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (currentNotebook) {
+      // Submit a form to the server
+      const form = document.createElement('form');
+      form.method = 'POST';
+
+      const actionInput = document.createElement('input');
+      actionInput.type = 'hidden';
+      actionInput.name = 'action';
+      actionInput.value = 'toggleShare';
+      form.appendChild(actionInput);
+
+      const notebookIdInput = document.createElement('input');
+      notebookIdInput.type = 'hidden';
+      notebookIdInput.name = 'notebookId';
+      notebookIdInput.value = currentNotebook.id;
+      form.appendChild(notebookIdInput);
+
+      const currentSharedStatusInput = document.createElement('input');
+      currentSharedStatusInput.type = 'hidden';
+      currentSharedStatusInput.name = 'currentSharedStatus';
+      currentSharedStatusInput.value = isCurrentlyShared.toString();
+      form.appendChild(currentSharedStatusInput);
+
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+
+      setIsShareModalOpen(false);
+    }
+  };
+
   return (
     <div className={css({
       height: '100%',
@@ -282,12 +331,28 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
                 <Clock size={18} /> Created: {new Date(currentNotebook.timestamp).toLocaleString()}
               </span>
             </div>
-            <button className={button({
-              variant: 'solid',
-              color: 'accent'
-            })} aria-describedby="action-tooltip" ref={actionToolTipRefs.setReference} {...getReferenceProps()}>Action</button>
+            {isNotebookOwner ? (
+              <button className={button({
+                variant: 'solid',
+                color: 'accent'
+              })} aria-describedby="action-tooltip" ref={actionToolTipRefs.setReference} {...getReferenceProps()}>Action</button>
+            ) : (
+              <div className={css({
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 2,
+                py: 1,
+                bg: 'gray.100',
+                color: 'gray.600',
+                rounded: 'md',
+                fontSize: 'sm'
+              })}>
+                <Share size={14} /> Shared with you
+              </div>
+            )}
             <AnimatePresence>
-              {isActionToolTipOpen && (
+              {isActionToolTipOpen && isNotebookOwner && (
                 <FloatingFocusManager context={context} modal={false}>
                   <motion.div
                     id="action-tooltip"
@@ -338,6 +403,23 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
                     >
                       <PencilLine size={18} /> Rename
                     </div>
+
+                    <div
+                      className={hstack({
+                        gap: 1,
+                        px: 4,
+                        py: 2,
+                        rounded: 'md',
+                        cursor: 'pointer',
+                        _hover: {
+                          bg: 'accent.50'
+                        }
+                      })}
+                      onClick={handleShareClick}
+                    >
+                      <Share size={18} /> {isCurrentlyShared ? 'Unshare Notebook' : 'Share Notebook'}
+                    </div>
+
                     <FloatingArrow fill='#e5e5e5' ref={arrowRef} context={context} />
                   </motion.div>
                 </FloatingFocusManager>
@@ -506,6 +588,54 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
                   className={button({ variant: 'solid', color: 'accent' })}
                 >
                   Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {isShareModalOpen && (
+        <div className={css({
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bg: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 50
+        })}>
+          <div className={css({
+            bg: 'white',
+            p: 4,
+            rounded: 'md',
+            maxWidth: '80%',
+            width: '400px'
+          })}>
+            <form onSubmit={handleShareSubmit}>
+              <h2 className={css({ fontSize: 'xl', mb: 2 })}>
+                {isCurrentlyShared ? 'Unshare Notebook' : 'Share Notebook'}
+              </h2>
+              <p className={css({ mb: 4 })}>
+                {isCurrentlyShared
+                  ? 'This notebook will no longer be accessible to other members of your organization.'
+                  : 'This notebook will be accessible to all members of your organization.'}
+              </p>
+              <div className={hstack({ gap: 2, justifyContent: 'flex-end' })}>
+                <button
+                  type="button"
+                  className={button({ variant: 'outline' })}
+                  onClick={() => setIsShareModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={button({ variant: 'solid', color: 'accent' })}
+                >
+                  {isCurrentlyShared ? 'Unshare' : 'Share'}
                 </button>
               </div>
             </form>

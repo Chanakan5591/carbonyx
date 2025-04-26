@@ -103,6 +103,7 @@ export const notebook = sqliteTable(
     name: text("name").notNull(),
     orgId: text("org_id").notNull(),
     userId: text("user_id").notNull(),
+    shared: integer("shared", { mode: 'boolean' }),
     timestamp: integer("timestamp")
       .notNull()
       .$defaultFn(() => (Date.now() / 1000) | 0)
