@@ -136,7 +136,6 @@ export function MessageBubble({
           {/* Message content and date */}
           <div className={vstack({
             alignItems: "flex-start",
-            spacing: 0.5,
             flex: 1,
             width: '80%'
           })}>
