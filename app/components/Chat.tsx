@@ -261,6 +261,12 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCurrentlyShared, setIsCurrentlyShared] = useState(currentNotebook?.shared || false);
 
+  useEffect(() => {
+    if (currentNotebook) {
+      setIsCurrentlyShared(currentNotebook.shared || false);
+    }
+  }, [currentNotebook]);
+
   // Add this handler function to your Chat component
   const handleShareClick = () => {
     if (currentNotebook && isNotebookOwner) {
