@@ -475,6 +475,8 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
                     switch (part.type) {
                       case 'text':
                         return <MessageBubble key={`${message.id}-${i}`} message={micromark(part.text, micromarkOpts)} messageType='plain' date={message.createdAt!.toLocaleString()} author={message.role} />
+                      case 'tool-invocation':
+                        return <MessageBubble key={`${message.id}-${i}`} message={part.toolInvocation.result?.query} messageType={part.toolInvocation.result?.type === 'sql' ? 'sql' : 'plain'} date={message.createdAt!.toLocaleString()} author='tool' />
                       default:
                         return null;
                     }
@@ -505,6 +507,7 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
                     borderColor: 'darkgreen',
                     borderWidth: 2,
                     p: 2,
+                    pr: 12,
                     border: 'solid',
                     boxShadow: 'md',
                     shadowColor: 'darkgreen',

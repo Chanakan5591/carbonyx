@@ -2,8 +2,10 @@ import { css } from "carbonyxation/css";
 import { flex, hstack, vstack } from "carbonyxation/patterns";
 import ProfilePicture from '~/assets/logo_64x.png'
 
+import { format } from 'sql-formatter'
+
 // Define the available message types and author roles
-type MessageType = 'plain'; // Can be expanded later
+type MessageType = 'plain' | 'sql'; // Can be expanded late r
 type AuthorRole = 'user' | 'assistant' | 'tool' | 'dataviz';
 
 interface MessageBubbleProps {
@@ -33,6 +35,17 @@ export function MessageBubble({
             width: "100%",
           })} dangerouslySetInnerHTML={{ __html: message }} />
         );
+      case 'sql':
+        return (
+          <div className={css({
+            fontSize: 'sm',
+            lineHeight: '1.5',
+            whiteSpace: 'pre-wrap',
+            width: '100%'
+          })}>
+            {format(message, { language: 'sqlite' })}
+          </div>
+        )
       // Additional message types can be added here
       default:
         return (
@@ -172,6 +185,8 @@ export function MessageBubble({
             alignItems: "flex-start",
             spacing: 0.5,
             flex: 1,
+            color: 'neutral.600',
+            fontFamily: 'monospace'
           })}>
             {renderMessageContent()}
             {renderDateFooter()}
