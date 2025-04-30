@@ -7,9 +7,21 @@ import {
   foreignKey,
 } from "drizzle-orm/sqlite-core";
 
-// Define the factors table
+// Central Factors data for the organization
 export const factors = sqliteTable("factors", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  subType: text("sub_type").notNull(),
+  unit: text("unit").notNull(),
+  factor: real("factor").notNull(),
+});
+
+
+// organization-specific factor data
+export const orgFactors = sqliteTable("org_factors", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orgId: text("org_id").notNull(),
   name: text("name").notNull(),
   type: text("type").notNull(),
   subType: text("sub_type").notNull(),

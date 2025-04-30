@@ -10,7 +10,7 @@ import { env } from '~/env.server'
 import { getAuth } from '@clerk/react-router/ssr.server'
 import { redirect } from 'react-router'
 
-import { eq, and, gte, lte } from 'drizzle-orm'
+import { eq, and, gte, lte, sql } from 'drizzle-orm'
 import { DateTime } from 'luxon'
 import { parseOffset } from '~/utils/time-utils'
 
@@ -36,7 +36,7 @@ export async function action(args: Route.ActionArgs) {
   try {
     const result = streamText({
       model: openai('gpt-4o-mini'),
-      system: `You are ปลื้ม (Pleum). ปลื้ม is a large language model developed by Carbonyx Tech Team.
+      system: `You are ปลื้ม (Pleum). ปลื้ม is a large language model developed by Carbonyx Tech Team. If asked about carbon reduction plan, always use **orgOverview** tool to access organization data for emissions information to make decisive action response
 
 As an expert Research Assistant specializing in comprehensive information gathering and analysis on carbon emissions and climate change, your goal is to help users find accurate, detailed, and relevant information on these topics.
 
@@ -60,7 +60,7 @@ When handling research requests, you should:
    - Prioritize peer-reviewed content
    
    For Organization-Specific Data:
-   - Use **orgOverview** to get general overview of local organization emissions data
+   - Use **orgOverview** to get general overview of local organization emissions data, always call this tool when asked about carbon reduction plan
    - Use **fetch_organization_emission** for detailed organization emission information
    
    For Carbon Trends Research:
@@ -81,8 +81,8 @@ When responding:
 6. Structure responses logically
 7. Balance technical precision with accessibility
 8. Focus exclusively on carbon emissions and climate change topics
-9. Don't ask the user for organization ID or organization name, the tool already knows the ID needed
-10. If asked about carbon reduction plan, always use the tool to access organization data for emissions information to make decisive action response
+9. Don't ask the user for organization ID or organization name, the tool already knows the ID needed 
+10. When recommending actions, always list out main emissions that can be a problem first, focus on the highest emissions category to deal with first, then list any other category and alternatives later
 
 ปลื้ม is constantly learning and improving, with evolving capabilities to process and understand information on carbon emissions, climate change, and local organization data related to carbon emissions (always assume that user meant their local emission data when asked about the data). If asked about anything outside these topics, you must refuse to answer and state that it's out of scope.`,
       messages,
@@ -97,18 +97,26 @@ When responding:
             const endDt = endDtObj.toUnixInteger()
             const startDt = parseOffset(endDtObj, timeframe).toUnixInteger() // we add string of 000 to convert to millis
 
-            const query = db.select({
-              factor: factors.name,
-              recordedFactor: collectedData.recordedFactor,
-              emissions: collectedData.value,
-              timestamp: collectedData.timestamp
-            }).from(collectedData).where(
-              and(
-                eq(collectedData.orgId, auth.orgId!),
-                gte(collectedData.timestamp, startDt),
-                lte(collectedData.timestamp, endDt)
+            const monthExpression = sql`strftime('%Y-%m', datetime(${collectedData.timestamp}, 'unixepoch'))`;
+
+            const query = db
+              .select({
+                factor: factors.name,
+                month: monthExpression.as('month'),
+                total_emissions: sql`SUM(${collectedData.value})`.as('Total Emissions (Kg CO2e)')
+              })
+              .from(collectedData)
+              .leftJoin(factors, eq(collectedData.factorId, factors.id))
+              .where(
+                and(
+                  eq(collectedData.orgId, auth.orgId!), // Keeping your organization filter
+                  gte(collectedData.timestamp, startDt),
+                  lte(collectedData.timestamp, endDt)
+                )
               )
-            ).leftJoin(factors, eq(collectedData.factorId, factors.id))
+              .groupBy(factors.name, monthExpression)
+              .orderBy(monthExpression, factors.name)
+              .limit(1000);
 
             let sqlString = query.toSQL().sql;
 

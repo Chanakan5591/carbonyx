@@ -12,7 +12,6 @@ import { gfm, gfmHtml } from "micromark-extension-gfm";
 import { ArrowUp, Clock, Trash, PencilLine, Share } from "lucide-react";
 import { motion, AnimatePresence } from 'motion/react'
 import React from "react";
-import { useNavigate } from "react-router";
 
 interface Props {
   initialMessagesCurrentNotebook: Message[] | null
@@ -474,7 +473,7 @@ export default function Chat({ initialMessagesCurrentNotebook, currentNotebook, 
                   {message.parts.map((part, i) => {
                     switch (part.type) {
                       case 'text':
-                        return <MessageBubble key={`${message.id}-${i}`} message={micromark(part.text, micromarkOpts)} messageType='plain' date={message.createdAt!.toLocaleString()} author={message.role} />
+                        return <MessageBubble key={`${message.id}-${i}`} message={micromark(part.text, micromarkOpts)} messageType='plain' date={new Date(message.createdAt!).toLocaleString()} author={message.role} />
                       case 'tool-invocation':
                         return <MessageBubble key={`${message.id}-${i}`} message={part.toolInvocation.result?.query} messageType={part.toolInvocation.result?.type === 'sql' ? 'sql' : 'plain'} date={message.createdAt!.toLocaleString()} author='tool' />
                       default:

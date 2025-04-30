@@ -43,7 +43,7 @@ export function MessageBubble({
             whiteSpace: 'pre-wrap',
             width: '100%'
           })}>
-            {format(message, { language: 'sqlite' })}
+            {format(message, { language: 'sqlite', keywordCase: 'upper' })}
           </div>
         )
       // Additional message types can be added here
