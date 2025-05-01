@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface MenuItemProps {
-  icon?: "home" | "information" | "history" | "circle" | "question" | "gear" | "emissions" | "assets" | "integration" | "custom_factor" | "location";
+  icon?: "home" | "information" | "history" | "circle" | "question" | "gear" | "emissions" | "assets" | "integration" | "custom_factor" | "location" | "comment" | "none" | "money";
   text: string;
   route?: string;
   children?: React.ReactNode;
   level?: number;
-  exact?: boolean
+  exact?: boolean;
+  pad?: 1 | 2 | 4;
 }
 
 function getIcon(icon: MenuItemProps["icon"]) {
@@ -40,6 +41,8 @@ function getIcon(icon: MenuItemProps["icon"]) {
       return <i className="fa-solid fa-location-dot" />;
     case "comment":
       return <i className="fa-solid fa-comment" />;
+    case "money":
+      return <i className="fa-solid fa-bank" />;
     default:
       return <i className="fa-solid fa-angle-right" />;
   }
@@ -51,7 +54,8 @@ export function MenuItem({
   route,
   children,
   level = 0,
-  exact = false
+  exact = false,
+  pad = 1
 }: MenuItemProps) {
   const location = useLocation()
   const currentRoute = location.pathname;
@@ -88,6 +92,7 @@ export function MenuItem({
           justifyContent: "center",
           alignItems: "center",
           fontSize: "sm",
+          p: pad
         })}
       >
         {getIcon(icon)}
@@ -133,17 +138,15 @@ export function MenuItem({
           transition: "opacity 0.4s ease-in-out",
           opacity: isActive ? 1 : 0,
           bgGradient: "to-r",
-          gradientFrom: "white",
-          gradientVia: "accent.100",
-          gradientTo: "accent.200",
+          gradientFrom: "green.50",
+          gradientTo: "accent.50",
         },
         _hover: {
           _before: {
             opacity: 1,
             bgGradient: "to-r",
-            gradientFrom: "white",
-            gradientVia: "accent.100",
-            gradientTo: "accent.200",
+            gradientFrom: "green.50",
+            gradientTo: "accent.50",
           },
         },
       })}

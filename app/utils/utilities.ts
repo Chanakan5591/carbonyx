@@ -42,3 +42,11 @@ export function categorizeDateByMonth(
     return acc;
   }, {});
 }
+
+export function getUrl(path?: string) {
+  if ((process && process.env.NODE_ENV === "DEVELOPMENT") || (import.meta.env && import.meta.env.DEV)) {
+    return 'http://localhost:5173' + path
+  } else {
+    return 'https://carbonyx.chanakancloud.net' + path
+  }
+}

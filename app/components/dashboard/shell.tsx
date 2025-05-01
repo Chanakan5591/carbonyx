@@ -6,6 +6,7 @@ import { MenuItem, MenuSection } from "../menuitem";
 import { OrganizationSwitcher, UserButton, useAuth } from "@clerk/react-router";
 import { Menu, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from "react";
+import NotificationBox from "../notification-box";
 
 const BubbleChat = lazy(() => import("flowise-embed-react").then((module) => ({
   default: module.BubbleChat
@@ -98,7 +99,7 @@ export default function Shell() {
         <div
           className={css({
             display: `${displayMenu ? "flex" : "none"}`,
-            width: "full",
+            maxWidth: "18rem",
             sm: {
               display: "flex",
               minW: "56",
@@ -156,6 +157,10 @@ export default function Shell() {
             </MenuSection>
           </div>
           <div>
+            <NotificationBox title='Hello World' content='This is a notification box test, I am writing a very long text to test it out' buttonText="Complete Setup" color='primary' />
+            <NotificationBox title='Hi World' content='This is a notification box test, I am writing a very long text to test it out' buttonText="Complete Setup" color='accent' actionLink="" />
+
+
             <hr
               className={css({
                 borderTop: "1px solid",
@@ -164,7 +169,7 @@ export default function Shell() {
             />
             <MenuItem text="0% of footprint" icon="circle" />
             <MenuItem text="Help center" icon="question" />
-            <MenuItem text="Settings" icon="gear" />
+            <MenuItem text="Settings" icon="gear" route="/dashboard/settings" />
           </div>
         </div>
         <div

@@ -11,7 +11,12 @@ export const env = createEnv({
     FLOWISE_API_KEY: z.string(),
     COUCH_USERNAME: z.string(),
     COUCH_PASSWORD: z.string(),
-    TAVILY_API_KEY: z.string()
+    TAVILY_API_KEY: z.string(),
+    UPSTASH_PASSWORD: z.string(),
+    UPSTASH_URL: z.string().url(),
+    STRIPE_SECRET_KEY: z.string(),
+    MONTHLY_STANDARD_PRICE_ID: z.string(),
+    ANNUALLY_STANDARD_PRICE_ID: z.string()
   },
 
   runtimeEnv: process.env,

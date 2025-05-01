@@ -13,6 +13,8 @@ export default [
   route("/api/flowise/*", "routes/api/flowise.tsx"),
   route("/api/chat", "routes/api/chat.tsx"),
   route("/onboarding", "routes/onboarding.tsx"),
+  route("/plans", "routes/plans.tsx"),
+  route("/checkout/success", "routes/checkout/success.tsx"),
   ...prefix("/dashboard", [
     layout("routes/dashboard/layout.tsx", [
       route("/", "routes/dashboard/dashboard.tsx"),
@@ -27,7 +29,13 @@ export default [
       route("/factor", "routes/dashboard/factor.tsx"),
       route("/navigation", "routes/dashboard/navigation.tsx"),
       route("/coming-soon-excel", "routes/dashboard/coming-soon.tsx", { id: "coming-soon-excel" }),
-      route("/coming-soon-erp", "routes/dashboard/coming-soon.tsx", { id: "coming-soon-erp" })
+      route("/coming-soon-erp", "routes/dashboard/coming-soon.tsx", { id: "coming-soon-erp" }),
+      ...prefix("/settings", [
+        layout("routes/dashboard/settings.tsx", [
+          route("/", "routes/dashboard/settings.tsx", { id: "settings-route" }),
+          route("/organization/billing", "routes/dashboard/settings/org-billing.tsx")
+        ])
+      ])
     ]),
   ]),
 ] satisfies RouteConfig;
