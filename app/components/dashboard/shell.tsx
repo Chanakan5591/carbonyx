@@ -1,6 +1,3 @@
-import { css } from "carbonyxation/css";
-import { flex, hstack } from "carbonyxation/patterns";
-import { Outlet, Link, useRevalidator, useLocation } from "react-router";
 import SmallLogo from "~/assets/logo_64x.png";
 import { MenuItem, MenuSection } from "../menuitem";
 import { OrganizationSwitcher, UserButton, useAuth } from "@clerk/react-router";
@@ -8,6 +5,10 @@ import { Menu, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from "react";
 import NotificationBox from "../notification-box";
 import { useStore } from "~/stores";
+
+import { useRevalidator, useLocation, Link, Outlet } from "react-router";
+import { css } from 'carbonyxation/css'
+import { hstack, flex } from "carbonyxation/patterns";
 
 const BubbleChat = lazy(() => import("flowise-embed-react").then((module) => ({
   default: module.BubbleChat
@@ -22,8 +23,13 @@ export default function Shell() {
   const { revalidate } = useRevalidator()
   const [renderBubble, setRenderBubble] = useState(true)
   const location = useLocation()
+  const [isBrowser, setIsBrowser] = useState(false)
 
   const subscriptionPlan = useStore((state) => state.subscriptionPlan)
+
+  useEffect(() => {
+    setIsBrowser(true)
+  }, [])
 
   useEffect(() => {
     if (location.pathname.startsWith('/dashboard/notebook')) {
@@ -183,7 +189,7 @@ export default function Shell() {
         >
           <Outlet />
         </div>
-        {renderBubble &&
+        {renderBubble && isBrowser &&
           <Suspense fallback={<div></div>}>
             <BubbleChat
               chatflowid="carbonyx"

@@ -2,7 +2,6 @@ import type { Route } from "./+types/success";
 import { getAuth } from "@clerk/react-router/ssr.server";
 
 import { redirect } from "react-router";
-import { stripe_kv } from "~/kv/stripe";
 import { STRIPE_CUSTOMER_ID_KV, syncStripeDataToKV } from "~/utils/kv";
 
 export async function loader(args: Route.LoaderArgs) {

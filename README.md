@@ -1,5 +1,10 @@
 # TODO
 
+## Background Task
+- remove organization in demo mode that is on demo for 30 days
+- fetch factors from TGO and save into database
+- for each assets in the organization, calculate the emission at the end of each month, and store into collectedData monthly
+
 ## Subscriptions
 - Prevent organization from subscribing without proper org settings
 
