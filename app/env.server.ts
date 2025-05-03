@@ -15,8 +15,9 @@ export const env = createEnv({
     UPSTASH_PASSWORD: z.string(),
     UPSTASH_URL: z.string().url(),
     STRIPE_SECRET_KEY: z.string(),
+    STRIPE_WEBHOOK_SECRET: z.string(),
     MONTHLY_STANDARD_PRICE_ID: z.string(),
-    ANNUALLY_STANDARD_PRICE_ID: z.string()
+    ANNUALLY_STANDARD_PRICE_ID: z.string(),
   },
 
   runtimeEnv: process.env,

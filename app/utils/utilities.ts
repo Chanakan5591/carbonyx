@@ -50,3 +50,16 @@ export function getUrl(path?: string) {
     return 'https://carbonyx.chanakancloud.net' + path
   }
 }
+
+export async function tryCatch<T, Args extends any[]>(
+  fn: (...args: Args) => T | Promise<T>,
+  ...args: Args
+): Promise<{ result: T | null; error: unknown | null }> {
+  try {
+    const result = await fn(...args);
+    return { result, error: null };
+  } catch (error) {
+    return { result: null, error };
+  }
+}
+

@@ -12,18 +12,17 @@ import {
   getYearRange,
   getPreviousYearRange,
 } from "~/utils/time-utils";
-import { getAuth } from "@clerk/react-router/ssr.server";
 import { Await } from "react-router";
 import { button } from "~/components/button";
 
 import MonthYearRangePicker, { type DateOption, type DateRange } from "~/components/monthyearpicker";
 import { format } from "date-fns";
+import { getAuth } from "~/utils/auth-helper";
 
 export function loader(args: Route.LoaderArgs) {
   const auth = getAuth(args);
   const orgId = auth.then(auth => auth.orgId);
 
-  // Not awaited - will be resolved later in the component
   const data = orgId.then(id => provideData(id ?? ""));
 
   return data;

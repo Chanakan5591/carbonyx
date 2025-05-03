@@ -7,6 +7,7 @@ import { OrganizationSwitcher, UserButton, useAuth } from "@clerk/react-router";
 import { Menu, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from "react";
 import NotificationBox from "../notification-box";
+import { useStore } from "~/stores";
 
 const BubbleChat = lazy(() => import("flowise-embed-react").then((module) => ({
   default: module.BubbleChat
@@ -21,6 +22,8 @@ export default function Shell() {
   const { revalidate } = useRevalidator()
   const [renderBubble, setRenderBubble] = useState(true)
   const location = useLocation()
+
+  const subscriptionPlan = useStore((state) => state.subscriptionPlan)
 
   useEffect(() => {
     if (location.pathname.startsWith('/dashboard/notebook')) {
@@ -157,9 +160,9 @@ export default function Shell() {
             </MenuSection>
           </div>
           <div>
-            <NotificationBox title='Hello World' content='This is a notification box test, I am writing a very long text to test it out' buttonText="Complete Setup" color='primary' />
-            <NotificationBox title='Hi World' content='This is a notification box test, I am writing a very long text to test it out' buttonText="Complete Setup" color='accent' actionLink="" />
-
+            {subscriptionPlan === 'Demo' &&
+              <NotificationBox title='You are on a Demo Plan!' content='This is a demo plan, organization data may be deleted after a month. Select a plan to make it permanent!' buttonText="Choose Plan" color='primary' actionLink="/pricing" />
+            }
 
             <hr
               className={css({

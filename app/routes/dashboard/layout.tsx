@@ -1,26 +1,35 @@
-import { Outlet } from "react-router";
 import Shell from "~/components/dashboard/shell";
 import type { Route } from "./+types/layout";
-import { redirect, useNavigate, useRevalidator } from 'react-router'
-import { getAuth } from '@clerk/react-router/ssr.server'
+import { useNavigate, useRevalidator } from 'react-router'
 import { useOrganizationList, useAuth } from "@clerk/react-router";
 import { useEffect } from "react";
+import { getSubTier } from "~/utils/subscription";
+import { useStore, type SubscriptionPlan } from "~/stores";
+
+import { Toaster } from 'sonner'
 
 export async function loader(args: Route.LoaderArgs) {
-  const auth = await getAuth(args)
+  let current_tier: SubscriptionPlan | null = await getSubTier(args)
 
-  if (!auth.sessionId) {
-    return redirect('/signin')
+  if (!current_tier) {
+    current_tier = 'Demo'
   }
-  return null
+
+  return { current_tier }
 }
 
-export default function DashboardLayout() {
+export default function DashboardLayout({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
   const orgList = useOrganizationList({ userMemberships: true });
   const auth = useAuth()
 
+  const updateSubscriptionPlan = useStore((state) => state.updateSubscriptionPlan)
+
   const revalidator = useRevalidator()
+
+  useEffect(() => {
+    updateSubscriptionPlan(loaderData.current_tier)
+  }, [loaderData.current_tier])
 
   useEffect(() => {
     if (!orgList.isLoaded || orgList.userMemberships.isFetching) return
@@ -42,6 +51,7 @@ export default function DashboardLayout() {
 
   return (
     <>
+      <Toaster />
       <Shell />
     </>
   );

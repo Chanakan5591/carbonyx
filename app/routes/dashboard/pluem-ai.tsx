@@ -9,7 +9,6 @@ import { NotebookItem } from "~/components/notebookitem";
 import type { Route } from "./+types/pluem-ai";
 import { db, pluem_messages } from "~/db/db";
 import { notebook, type Notebook } from "~/db/schema";
-import { getAuth } from "@clerk/react-router/ssr.server";
 import { eq, and, or } from 'drizzle-orm'
 import { redirect, Await } from 'react-router'
 import type { DocumentGetResponse } from "nano";
@@ -17,14 +16,14 @@ import Chat from "~/components/Chat";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, appendResponseMessages } from "ai";
 import { Link } from 'react-router'
+import { getAuth } from "~/utils/auth-helper";
 
 export async function loader(args: Route.LoaderArgs) {
   const notebookId = args.params.notebookId
   const auth = await getAuth(args)
-  const orgId = auth.orgId
+  const orgId = auth.orgId!
   const userId = auth.userId
 
-  if (!orgId || !userId) throw redirect('/')
 
   const allAccessibleNotebooks = (await db.select().from(notebook).where(
     and(

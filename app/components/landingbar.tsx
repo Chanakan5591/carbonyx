@@ -36,14 +36,16 @@ export default function LandingBar() {
             gap: 2,
           })}
         >
-          <button
-            className={button({
-              color: "secondary",
-              variant: "outline",
-            })}
-          >
-            Documentation
-          </button>
+          <Link to='/pricing'>
+            <button
+              className={button({
+                color: "secondary",
+                variant: "outline",
+              })}
+            >
+              Pricing
+            </button>
+          </Link>
           <button
             className={button({
               color: "secondary",

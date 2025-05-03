@@ -1,5 +1,4 @@
 import { cva } from "carbonyxation/css";
-
 const button = cva({
   base: {
     padding: "2",
@@ -11,6 +10,13 @@ const button = cva({
     transition: "all 0.2s ease-in-out",
   },
   variants: {
+    disabled: {
+      true: {
+        opacity: 0.6,
+        cursor: "not-allowed",
+        pointerEvents: "none", // This prevents hover effects completely
+      },
+    },
     color: {
       primary: {
         backgroundColor: "primary.300",
@@ -39,7 +45,6 @@ const button = cva({
         padding: "calc(0.5rem - 2px)",
         backgroundColor: "transparent",
         border: "2px solid",
-
         "&.color-primary": {
           borderColor: "primary.300",
           color: "primary.300",
@@ -129,5 +134,4 @@ const button = cva({
     },
   ],
 });
-
 export { button };

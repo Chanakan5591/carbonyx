@@ -1,5 +1,50 @@
-import { stripe_kv } from '~/kv/stripe';
-import { stripe } from '~/stripe'
+import type Stripe from "stripe";
+import { stripe_kv } from "~/kv/stripe";
+import { stripe } from "~/stripe";
+
+export type STRIPE_SUB_CACHE =
+  | {
+    subscriptionId: string | null;
+    status: Stripe.Subscription.Status;
+    priceId: string | null;
+    currentPeriodStart: number | null;
+    currentPeriodEnd: number | null;
+    cancelAtPeriodEnd: boolean;
+    paymentMethod: {
+      brand: string | null; // e.g., "visa", "mastercard"
+      last4: string | null; // e.g., "4242"
+    } | null;
+  }
+  | {
+    status: "none";
+  };
+
+export const STRIPE_CUSTOMER_ID_KV = {
+  generateKey(orgId: string) {
+    return `stripe:org:${orgId}`;
+  },
+  async get(orgId: string) {
+    return await stripe_kv.get(this.generateKey(orgId));
+  },
+  async set(orgId: string, customerId: string) {
+    await stripe_kv.set(this.generateKey(orgId), customerId);
+  },
+};
+
+export const STRIPE_CUSTOMER_CACHE_KV = {
+  generateKey(customerId: string) {
+    return `stripe:customer:${customerId}`;
+  },
+  async get(customerId: string) {
+    const response = await stripe_kv.get(this.generateKey(customerId));
+
+    if (!response) return { status: "none" };
+    return JSON.parse(response) as STRIPE_SUB_CACHE;
+  },
+  async set(customerId: string, status: STRIPE_SUB_CACHE) {
+    await stripe_kv.set(this.generateKey(customerId), JSON.stringify(status));
+  },
+};
 
 export async function syncStripeDataToKV(customerId: string) {
   // Fetch latest subscription data from Stripe
@@ -11,9 +56,8 @@ export async function syncStripeDataToKV(customerId: string) {
   });
 
   if (subscriptions.data.length === 0) {
-    const subData = { status: "none" };
-    await stripe_kv.set(`stripe:customer:${customerId}`, subData);
-    return subData;
+    await STRIPE_CUSTOMER_CACHE_KV.set(customerId, { status: "none" });
+    return { status: "none" };
   }
 
   // If a user can have multiple subscriptions, that's your problem
@@ -38,6 +82,14 @@ export async function syncStripeDataToKV(customerId: string) {
   };
 
   // Store the data in your KV
-  await stripe_kv.set(`stripe:customer:${customerId}`, subData);
+  await STRIPE_CUSTOMER_CACHE_KV.set(customerId, subData);
   return subData;
+}
+
+export async function getStripeSubByOrgId(orgId: string) {
+  const stripeCustomerId = await STRIPE_CUSTOMER_ID_KV.get(orgId);
+
+  if (!stripeCustomerId) return null;
+
+  return STRIPE_CUSTOMER_CACHE_KV.get(stripeCustomerId);
 }

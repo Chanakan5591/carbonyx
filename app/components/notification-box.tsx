@@ -1,6 +1,8 @@
 import { css } from "carbonyxation/css"
-import { flex } from "carbonyxation/patterns"
+import { flex, hstack } from "carbonyxation/patterns"
 import { button } from "./button"
+
+import { Link } from 'react-router'
 
 interface Props {
   title: string
@@ -27,15 +29,23 @@ export default function PlanBox({ title, content, buttonText, actionLink, color 
         fontSize: 18,
         fontWeight: 'semibold',
       })}>{title}</span>
+
       <span className={css({
         color: 'neutral.600',
         marginBottom: 2
       })}>{content}</span>
-      <button className={button({
-        color: color
+
+      <Link to={actionLink} className={flex({
+        flexDir: 'column',
+        maxWidth: 'full',
       })}>
-        {buttonText}
-      </button>
+        <button className={button({
+          color: color,
+        })}>
+          {buttonText}
+        </button>
+
+      </Link >
     </div>
   )
 }

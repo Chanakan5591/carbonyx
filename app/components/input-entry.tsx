@@ -38,7 +38,7 @@ const TextInput: React.FC<TextInputProps> = ({
   };
 
   return (
-    <label htmlFor={id} className={css({ display: "block", width: "full" })}>
+    <label htmlFor={id} className={css({ display: "block", width: "full", fontWeight: 'semibold' })}>
       {label}{unit ? ` (${unit})` : ""}:
       <input
         type={type === "number" ? "text" : type} // Using text for numeric values for better control
@@ -60,6 +60,7 @@ const TextInput: React.FC<TextInputProps> = ({
           border: "1px solid",
           borderColor: "neutral.300",
           borderRadius: "md",
+          fontWeight: 'normal'
         }, className)}
       />
     </label>

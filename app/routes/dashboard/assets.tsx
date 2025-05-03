@@ -1,19 +1,22 @@
 import { css } from "carbonyxation/css";
 import { flex } from "carbonyxation/patterns";
-import DataInput, { type DataInputProps, type AssetData } from "~/components/data-input";
+import DataInput, {
+  type DataInputProps,
+  type AssetData,
+} from "~/components/data-input";
 import Table from "~/components/table";
-import type { Route } from './+types/assets'
-import { getAuth } from '@clerk/react-router/ssr.server'
+import type { Route } from "./+types/assets";
+import { getAuth } from "~/utils/auth-helper";
 import { assets, assetsData, factors } from "~/db/schema";
-import { eq } from 'drizzle-orm'
-import { db } from '~/db/db'
+import { eq } from "drizzle-orm";
+import { db } from "~/db/db";
 import { useNavigation, useActionData, useSubmit } from "react-router";
 import { useEffect, useState } from "react";
-import { toast } from 'sonner'
+import { toast } from "sonner";
 
 export async function loader(args: Route.LoaderArgs) {
-  const auth = await getAuth(args)
-  const orgId = auth.orgId!
+  const auth = await getAuth(args);
+  const orgId = auth.orgId!;
 
   // Get assets data with joins to get asset names
   const assets_usage = await db
@@ -29,20 +32,23 @@ export async function loader(args: Route.LoaderArgs) {
     .where(eq(assetsData.orgId, orgId));
 
   // Get available assets with their emission factors
-  const availableAssets: AssetData[] = await db.select({
-    id: assets.id,
-    name: assets.name,
-    factor_name: factors.name,
-    factor: factors.factor,
-    unit: assets.unit,
-    factor_unit: factors.unit,
-    conversion_rate: assets.conversion_rate
-  }).from(assets).innerJoin(factors, eq(factors.id, assets.factor_id));
+  const availableAssets: AssetData[] = await db
+    .select({
+      id: assets.id,
+      name: assets.name,
+      factor_name: factors.name,
+      factor: factors.factor,
+      unit: assets.unit,
+      factor_unit: factors.unit,
+      conversion_rate: assets.conversion_rate,
+    })
+    .from(assets)
+    .innerJoin(factors, eq(factors.id, assets.factor_id));
 
   return {
     assets_usage,
-    availableAssets
-  }
+    availableAssets,
+  };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -106,8 +112,10 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
 
   // Enhanced table data with all the additional fields
   const [tableData, setTableData] = useState(
-    loaderData.assets_usage.map(assetData => {
-      const asset = loaderData.availableAssets.find(a => a.id === assetData.asset_id);
+    loaderData.assets_usage.map((assetData) => {
+      const asset = loaderData.availableAssets.find(
+        (a) => a.id === assetData.asset_id,
+      );
       return {
         ...assetData,
         assetName: asset?.name || "Unknown",
@@ -116,30 +124,49 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
         factorName: asset?.factor_name || "Unknown",
         factorUnit: asset?.factor_unit || "",
         factor: asset?.factor || 0,
-        totalEmission: asset ?
-          Math.round((assetData.value * assetData.recordedFactor * asset.conversion_rate + Number.EPSILON) * 100) / 100 : 0
+        totalEmission: asset
+          ? Math.round(
+              (assetData.value *
+                assetData.recordedFactor *
+                asset.conversion_rate +
+                Number.EPSILON) *
+                100,
+            ) / 100
+          : 0,
       };
-    })
+    }),
   );
 
-  const [editingData, setEditingData] = useState<DataInputProps["editingData"]>(null);
+  const [editingData, setEditingData] =
+    useState<DataInputProps["editingData"]>(null);
 
   // Update table data when loader data changes
   useEffect(() => {
-    setTableData(loaderData.assets_usage.map(assetData => {
-      const asset = loaderData.availableAssets.find(a => a.id === assetData.asset_id);
-      return {
-        ...assetData,
-        assetName: asset?.name || "Unknown",
-        unit: asset?.unit || "",
-        conversionRate: asset?.conversion_rate || 1,
-        factorName: asset?.factor_name || "Unknown",
-        factorUnit: asset?.factor_unit || "",
-        factor: asset?.factor || 0,
-        totalEmission: asset ?
-          Math.round((assetData.value * assetData.recordedFactor * asset.conversion_rate + Number.EPSILON) * 100) / 100 : 0
-      };
-    }));
+    setTableData(
+      loaderData.assets_usage.map((assetData) => {
+        const asset = loaderData.availableAssets.find(
+          (a) => a.id === assetData.asset_id,
+        );
+        return {
+          ...assetData,
+          assetName: asset?.name || "Unknown",
+          unit: asset?.unit || "",
+          conversionRate: asset?.conversion_rate || 1,
+          factorName: asset?.factor_name || "Unknown",
+          factorUnit: asset?.factor_unit || "",
+          factor: asset?.factor || 0,
+          totalEmission: asset
+            ? Math.round(
+                (assetData.value *
+                  assetData.recordedFactor *
+                  asset.conversion_rate +
+                  Number.EPSILON) *
+                  100,
+              ) / 100
+            : 0,
+        };
+      }),
+    );
   }, [loaderData]);
 
   // Handle successful actions
@@ -153,7 +180,9 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
             return prev;
           }
 
-          const asset = loaderData.availableAssets.find(a => a.id === actionData.updatedRecord.asset_id);
+          const asset = loaderData.availableAssets.find(
+            (a) => a.id === actionData.updatedRecord.asset_id,
+          );
           const newRecord = {
             ...actionData.updatedRecord,
             assetName: asset?.name || "Unknown",
@@ -162,8 +191,15 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
             factorName: asset?.factor_name || "Unknown",
             factorUnit: asset?.factor_unit || "",
             factor: asset?.factor || 0,
-            totalEmission: asset ?
-              Math.round((actionData.updatedRecord.value * actionData.updatedRecord.recordedFactor * asset.conversion_rate + Number.EPSILON) * 100) / 100 : 0
+            totalEmission: asset
+              ? Math.round(
+                  (actionData.updatedRecord.value *
+                    actionData.updatedRecord.recordedFactor *
+                    asset.conversion_rate +
+                    Number.EPSILON) *
+                    100,
+                ) / 100
+              : 0,
           };
 
           return [...prev, newRecord];
@@ -172,7 +208,9 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
         setTableData((prev) =>
           prev.map((item) => {
             if (item.id === actionData.updatedRecord.id) {
-              const asset = loaderData.availableAssets.find(a => a.id === actionData.updatedRecord.asset_id);
+              const asset = loaderData.availableAssets.find(
+                (a) => a.id === actionData.updatedRecord.asset_id,
+              );
               return {
                 ...actionData.updatedRecord,
                 assetName: asset?.name || "Unknown",
@@ -181,16 +219,23 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
                 factorName: asset?.factor_name || "Unknown",
                 factorUnit: asset?.factor_unit || "",
                 factor: asset?.factor || 0,
-                totalEmission: asset ?
-                  Math.round((actionData.updatedRecord.value * actionData.updatedRecord.recordedFactor * asset.conversion_rate + Number.EPSILON) * 100) / 100 : 0
+                totalEmission: asset
+                  ? Math.round(
+                      (actionData.updatedRecord.value *
+                        actionData.updatedRecord.recordedFactor *
+                        asset.conversion_rate +
+                        Number.EPSILON) *
+                        100,
+                    ) / 100
+                  : 0,
               };
             }
             return item;
-          })
+          }),
         );
       } else if (actionData.intent === "delete" && actionData.updatedRecord) {
         setTableData((prev) =>
-          prev.filter((item) => item.id !== actionData.updatedRecord.id)
+          prev.filter((item) => item.id !== actionData.updatedRecord.id),
         );
       }
 
@@ -202,20 +247,30 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
   const columns = [
     { key: "timestamp", title: "Timestamp", type: "timestamp" },
     { key: "assetName", title: "Asset Name", type: "string" },
-    { key: "value", title: "Quantity", type: "number", suffix: (row: any) => row.value <= 1 ? row.unit : row.unit + "s" || "" },
+    {
+      key: "value",
+      title: "Quantity",
+      type: "number",
+      suffix: (row: any) => (row.value <= 1 ? row.unit : row.unit + "s" || ""),
+    },
     {
       key: "conversionRate",
       title: "Factor Unit Per Quantity",
       type: "number",
-      suffix: (row: any) => `${row.factorUnit}/${row.unit}`
+      suffix: (row: any) => `${row.factorUnit}/${row.unit}`,
     },
     {
       key: "factor",
       title: "Factor",
       type: "number",
-      suffix: (row: any) => `kgCO₂e/${row.factorUnit}`
+      suffix: (row: any) => `kgCO₂e/${row.factorUnit}`,
     },
-    { key: "totalEmission", title: "Total Emission", type: "number", suffix: "kg CO₂e" },
+    {
+      key: "totalEmission",
+      title: "Total Emission",
+      type: "number",
+      suffix: "kg CO₂e",
+    },
   ];
 
   const handleDataSubmit = async (newData: {
@@ -229,7 +284,7 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
     formData.append("asset_id", newData.asset_id);
     formData.append(
       "value",
-      newData.value === "" ? "0" : newData.value.toString()
+      newData.value === "" ? "0" : newData.value.toString(),
     );
     formData.append("orgId", newData.orgId);
     formData.append("recordedFactor", newData.recordedFactor.toString());
@@ -241,7 +296,7 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
       id: editData.id,
       asset_id: editData.asset_id,
       value: editData.value,
-      recordedFactor: editData.recordedFactor
+      recordedFactor: editData.recordedFactor,
     });
   };
 
@@ -251,7 +306,7 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
       asset_id: string;
       value: number | "";
       recordedFactor: number;
-    }
+    },
   ) => {
     const formData = new FormData();
     formData.append("intent", "edit");
@@ -259,7 +314,7 @@ export default function Assets({ loaderData }: Route.ComponentProps) {
     formData.append("asset_id", updatedData.asset_id);
     formData.append(
       "value",
-      updatedData.value === "" ? "0" : updatedData.value.toString()
+      updatedData.value === "" ? "0" : updatedData.value.toString(),
     );
     formData.append("recordedFactor", updatedData.recordedFactor.toString());
     submit(formData, { method: "post" });

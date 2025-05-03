@@ -7,13 +7,15 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
-  layout("routes/landing-layout.tsx", [index("routes/home.tsx")]),
+  layout("routes/landing-layout.tsx", [index("routes/home.tsx"), route("/pricing", "routes/plans.tsx")]),
   route("/signin/*", "routes/sign-in.tsx"),
   route("/signup/*", "routes/sign-up.tsx"),
+
   route("/api/flowise/*", "routes/api/flowise.tsx"),
   route("/api/chat", "routes/api/chat.tsx"),
+  route("/api/stripe", "routes/api/stripe.tsx"),
+
   route("/onboarding", "routes/onboarding.tsx"),
-  route("/plans", "routes/plans.tsx"),
   route("/checkout/success", "routes/checkout/success.tsx"),
   ...prefix("/dashboard", [
     layout("routes/dashboard/layout.tsx", [

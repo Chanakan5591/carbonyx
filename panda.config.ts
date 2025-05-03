@@ -25,6 +25,13 @@ export default defineConfig({
       textStyles,
       tokens: {
         colors: {
+          switch: {
+            thumb: { value: 'white' },
+            track: {
+              bg: { value: '#e2e8f0' },
+              active: { value: '#496a57' },
+            }
+          },
           primary: {
             50: { value: "#a89f8d" }, // Lightest
             100: { value: "#958c7a" },

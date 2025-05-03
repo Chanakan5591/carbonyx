@@ -3,7 +3,7 @@ import { getAuth } from "@clerk/react-router/ssr.server";
 
 import { redirect } from "react-router";
 import { stripe_kv } from "~/kv/stripe";
-import { syncStripeDataToKV } from "~/utils/kv";
+import { STRIPE_CUSTOMER_ID_KV, syncStripeDataToKV } from "~/utils/kv";
 
 export async function loader(args: Route.LoaderArgs) {
   const auth = await getAuth(args);
@@ -12,12 +12,14 @@ export async function loader(args: Route.LoaderArgs) {
     throw redirect('/');
   }
 
-  const stripeCustomerId = await stripe_kv.get(auth.orgId)
+  const stripeCustomerId = await STRIPE_CUSTOMER_ID_KV.get(auth.orgId)
 
-  if (stripeCustomerId) {
-    await syncStripeDataToKV(stripeCustomerId)
+  if (!stripeCustomerId) {
+    return redirect('/')
   }
-  return null
+
+  await syncStripeDataToKV(stripeCustomerId)
+  return redirect('/')
 }
 
 export default function SuccesCheckout() {
