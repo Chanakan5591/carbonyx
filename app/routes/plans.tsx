@@ -148,7 +148,7 @@ export default function Plans({ loaderData }: Route.ComponentProps) {
           color: 'neutral.600',
         })}>Scale your sustainability efforts, not your carbon accounting costs</span>
       </div>
-      <Switch leftLabel="Annually" rightLabel="Monthly" defaultChecked={false} onChange={() => setRecurringType(recurringType === 'monthly' ? 'annually' : 'monthly')} />
+      <Switch leftLabel="Monthly" rightLabel="Annually" defaultChecked={true} onChange={() => setRecurringType(recurringType === 'monthly' ? 'annually' : 'monthly')} />
       <div className={flex({
         flexDir: 'column',
         gap: 4,
