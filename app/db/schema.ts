@@ -12,7 +12,7 @@ export const factors = sqliteTable("factors", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   type: text("type").notNull(),
-  subType: text("sub_type").notNull(),
+  subType: text("sub_type"),
   unit: text("unit").notNull(),
   factor: real("factor").notNull(),
 });
