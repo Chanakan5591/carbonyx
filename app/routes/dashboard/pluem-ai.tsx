@@ -7,7 +7,7 @@ import { button } from "~/components/button";
 import React, { useEffect, useRef, useState } from "react";
 import { NotebookItem } from "~/components/notebookitem";
 import type { Route } from "./+types/pluem-ai";
-import { db, pluem_messages } from "~/db/db";
+import { db, pluem_messages, dbc } from "~/db/db";
 import { notebook, type Notebook } from "~/db/schema";
 import { eq, and, or } from 'drizzle-orm'
 import { redirect, Await } from 'react-router'
@@ -17,6 +17,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, appendResponseMessages } from "ai";
 import { Link } from 'react-router'
 import { getAuth } from "~/utils/auth-helper";
+import { env } from "~/env.server";
 
 export async function loader(args: Route.LoaderArgs) {
   const notebookId = args.params.notebookId
@@ -56,6 +57,7 @@ export async function loader(args: Route.LoaderArgs) {
 
     // Check if messages document exists, if not create it with empty messages array
     try {
+      await dbc.auth(env.COUCH_USERNAME, env.COUCH_PASSWORD)
       messages = pluem_messages.get(notebookId)
     } catch (ex) {
       // Document doesn't exist, let's initialize it

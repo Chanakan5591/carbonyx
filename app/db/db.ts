@@ -16,4 +16,4 @@ const pluem_messages = dbc.use('pluem_messages');
   await dbc.auth(env.COUCH_USERNAME, env.COUCH_PASSWORD)
 })()
 
-export { db, pluem_messages };
+export { db, dbc, pluem_messages };
