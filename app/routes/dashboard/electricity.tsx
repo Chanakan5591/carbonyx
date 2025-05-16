@@ -20,7 +20,7 @@ import type { Route } from "./+types/electricity";
 import { getAuth } from "@clerk/react-router/ssr.server";
 import { toast } from "sonner";
 
-const factorType = "electricity"; // Set the factor type here
+const factorType = "grid"; // Set the factor type here
 
 export async function loader(args: Route.LoaderArgs) {
   const auth = await getAuth(args);
