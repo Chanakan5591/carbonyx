@@ -20,7 +20,7 @@ import {
 import type { Route } from "./+types/electricity";
 import { getAuth } from "@clerk/react-router/ssr.server";
 
-const factorType = "transportation"; // Set the factor type here
+const factorType = "mobile_combustion"; // Set the factor type here
 
 export async function loader(args: Route.LoaderArgs) {
   const auth = await getAuth(args);
@@ -30,7 +30,7 @@ export async function loader(args: Route.LoaderArgs) {
     .from(collectedData)
     .innerJoin(factors, eq(collectedData.factorId, factors.id))
     .where(
-      and(eq(factors.type, "transportation"), eq(collectedData.orgId, orgId)),
+      and(eq(factors.type, factorType), eq(collectedData.orgId, orgId)),
     );
 
   // Fetch available factors with 'factor' value

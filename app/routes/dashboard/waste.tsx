@@ -29,7 +29,7 @@ export async function loader(args: Route.LoaderArgs) {
     .select()
     .from(collectedData)
     .innerJoin(factors, eq(collectedData.factorId, factors.id))
-    .where(and(eq(factors.type, "waste"), eq(collectedData.orgId, orgId)));
+    .where(and(eq(factors.type, factorType), eq(collectedData.orgId, orgId)));
 
   // Fetch available factors with 'factor' value
   const availableFactors = await db
