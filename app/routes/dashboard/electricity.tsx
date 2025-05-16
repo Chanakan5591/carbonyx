@@ -32,7 +32,7 @@ export async function loader(args: Route.LoaderArgs) {
     .where(
       and(
         eq(collectedData.orgId, orgId),
-        eq(collectedData.factorId, 36) // You might need a better way to filter initial data
+        eq(collectedData.factorId, 42) // You might need a better way to filter initial data
       )
     );
   // Fetch available factors with 'factor' value
